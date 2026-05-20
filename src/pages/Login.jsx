@@ -53,9 +53,10 @@ export default function Login({ onLogin }) {
     }}>
       <div style={{ width: '100%', maxWidth: 440 }}>
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <img src={logoPng} alt="TAOMAN" style={{ width: 72, height: 72, objectFit: 'contain', marginBottom: 12 }} />
-          <div style={{ fontFamily: 'Sora,sans-serif', fontSize: 28, fontWeight: 800, color: '#0F1E3D' }}>TAOMAN</div>
-          <div style={{ fontSize: 12, color: '#7A9CC9', letterSpacing: '0.15em', textTransform: 'uppercase' }}>Portail Administrateur</div>
+          <img src={logoPng} alt="TAOMAN Group Investments" style={{ width: 88, height: 88, objectFit: 'contain', marginBottom: 16 }} />
+          <div style={{ fontFamily: 'Sora,sans-serif', fontSize: 26, fontWeight: 800, color: '#0F1E3D', letterSpacing: '0.02em' }}>TAOMAN</div>
+          <div style={{ fontSize: 13, color: '#3D5A99', fontWeight: 600, marginTop: 4 }}>Group Investments</div>
+          <div style={{ fontSize: 11, color: '#7A9CC9', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 8 }}>Portail administrateur</div>
         </div>
 
         <div style={{

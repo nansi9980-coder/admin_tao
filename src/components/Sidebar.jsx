@@ -36,8 +36,8 @@ export default function Sidebar({ badges = {}, user, onLogout }) {
             <img src={logoPng} alt="TAOMAN" style={{ width: '80%', height: '80%', objectFit: 'contain' }} />
           </div>
           <div>
-            <div style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: 17, color: '#0F1E3D' }}>TAOMAN</div>
-            <div style={{ fontSize: 10, color: '#7A9CC9', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Admin Portal</div>
+            <div style={{ fontFamily: 'Sora,sans-serif', fontWeight: 800, fontSize: 15, color: '#0F1E3D', lineHeight: 1.2 }}>TAOMAN</div>
+            <div style={{ fontSize: 9, color: '#7A9CC9', fontWeight: 600, letterSpacing: '0.04em', textTransform: 'uppercase' }}>Group Investments</div>
           </div>
         </div>
       </div>
