@@ -1,0 +1,87 @@
+import axios from 'axios'
+
+export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
+const BASE_URL = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`
+
+const api = axios.create({
+  baseURL: BASE_URL,
+  timeout: 15000,
+  headers: { 'Content-Type': 'application/json' },
+})
+
+api.interceptors.request.use((cfg) => {
+  const token = localStorage.getItem('taoman_admin_token')
+  if (token) cfg.headers.Authorization = `Bearer ${token}`
+  return cfg
+})
+
+api.interceptors.response.use(
+  (res) => res.data,
+  (err) => {
+    if (err.response?.status === 401 || err.response?.status === 403) {
+      localStorage.removeItem('taoman_admin_token')
+      localStorage.removeItem('taoman_admin_user')
+      if (!window.location.pathname.includes('login')) {
+        window.location.href = '/'
+      }
+    }
+    return Promise.reject(err)
+  },
+)
+
+export const authService = {
+  adminLogin: (email, password) => api.post('admin/auth/login', { email, password }),
+  verify2fa: (tempToken, code) => api.post('admin/auth/2fa/verify', { tempToken, code }),
+}
+
+export const dashboardService = {
+  getStats: () => api.get('admin/dashboard/stats'),
+}
+
+export const investorsService = {
+  getAll: (params = {}) => api.get(`admin/users?${new URLSearchParams(params)}`),
+  getOne: (id) => api.get(`admin/users/${id}`),
+  suspend: (id) => api.patch(`admin/users/${id}/suspend`),
+  activate: (id) => api.patch(`admin/users/${id}/activate`),
+  approveKyc: (id) => api.patch(`admin/users/${id}/kyc/approve`),
+  rejectKyc: (id, reason) => api.patch(`admin/users/${id}/kyc/reject`, { reason }),
+}
+
+export const documentsService = {
+  getAll: (status) => api.get(`admin/kyc/documents${status && status !== 'ALL' ? `?status=${status}` : ''}`),
+  approve: (id) => api.patch(`admin/kyc/documents/${id}/approve`),
+  reject: (id, reason) => api.patch(`admin/kyc/documents/${id}/reject`, { reason }),
+}
+
+export const subscriptionsService = {
+  getAll: (params = {}) => api.get(`admin/subscriptions?${new URLSearchParams(params)}`),
+}
+
+export const financeService = {
+  getStats: () => api.get('admin/finance/stats'),
+  getChart: (period = 'weekly') => api.get(`admin/finance/chart?period=${period}`),
+  getTransactions: (page = 1, limit = 20) => api.get(`admin/finance/transactions?page=${page}&limit=${limit}`),
+  getPendingDeposits: () => api.get('admin/finance/deposits/pending'),
+  confirmTransaction: (id) => api.patch(`admin/transactions/${id}/confirm`),
+  rejectTransaction: (id, reason) => api.patch(`admin/transactions/${id}/reject`, { reason }),
+}
+
+export const plansService = {
+  getAll: () => api.get('admin/plans'),
+  create: (data) => api.post('admin/plans', data),
+  update: (id, data) => api.patch(`admin/plans/${id}`, data),
+  delete: (id) => api.delete(`admin/plans/${id}`),
+}
+
+export const bannersService = {
+  getAll: () => api.get('admin/banners'),
+  create: (data) => api.post('admin/banners', data),
+  update: (id, data) => api.patch(`admin/banners/${id}`, data),
+  delete: (id) => api.delete(`admin/banners/${id}`),
+}
+
+export const auditService = {
+  getAll: (params = {}) => api.get(`admin/audit-logs?${new URLSearchParams(params)}`),
+}
+
+export default api
