@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { authService } from '../services/api'
+import { authService, API_BASE } from '../services/api'
 import logoPng from '../assets/logo.png'
 
 export default function Login({ onLogin }) {
@@ -33,15 +33,28 @@ export default function Login({ onLogin }) {
         const data = await authService.verify2fa(tempToken, code2fa)
         finishLogin(data)
       } else {
-        const data = await authService.adminLogin(email, password)
+        const data = await authService.adminLogin(email.trim().toLowerCase(), password)
         if (data.requires2fa) {
           setTempToken(data.tempToken)
+          setError('')
         } else {
           finishLogin(data)
         }
       }
-    } catch {
-      setError('Identifiants incorrects ou code 2FA invalide.')
+    } catch (err) {
+      if (!err.response) {
+        setError(
+          'Impossible de joindre l\'API. Vérifiez VITE_API_URL sur Vercel (https://backend-tao.onrender.com/v1) et CORS_ORIGINS sur Render.',
+        )
+      } else if (err.response?.data?.requires2fa) {
+        setTempToken(err.response.data.tempToken)
+        setError('')
+      } else {
+        setError(
+          err.response?.data?.message ||
+            'Identifiants incorrects ou code 2FA invalide.',
+        )
+      }
     }
     setLoading(false)
   }
@@ -57,6 +70,7 @@ export default function Login({ onLogin }) {
           <div style={{ fontFamily: 'Sora,sans-serif', fontSize: 26, fontWeight: 800, color: '#0F1E3D', letterSpacing: '0.02em' }}>TAOMAN</div>
           <div style={{ fontSize: 13, color: '#3D5A99', fontWeight: 600, marginTop: 4 }}>Group Investments</div>
           <div style={{ fontSize: 11, color: '#7A9CC9', letterSpacing: '0.12em', textTransform: 'uppercase', marginTop: 8 }}>Portail administrateur</div>
+          <div style={{ fontSize: 10, color: '#B0C4E8', marginTop: 12 }}>API : {API_BASE}</div>
         </div>
 
         <div style={{
