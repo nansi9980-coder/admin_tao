@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { subscriptionsService } from '../services/api'
-import { Loading, PageHeader, StatusBadge } from '../components/UI'
+import { Loading, StatusBadge } from '../components/UI'
 import DataTable from '../components/DataTable'
 import { useRealtimeSync } from '../hooks/useRealtimeSync'
 
@@ -29,8 +29,6 @@ export default function Subscriptions() {
 
   return (
     <div style={{ padding: '24px 28px 40px', maxWidth: 1200 }}>
-      <PageHeader title="Souscriptions" subtitle="Suivi des investissements et statuts" />
-
       {loading ? <Loading /> : (
         <DataTable
           emptyMessage="Aucune souscription"

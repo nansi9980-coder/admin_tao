@@ -56,9 +56,7 @@ export default function Finance() {
   if (loading) return <Loading />
 
   return (
-    <div style={{ padding: 28 }}>
-      <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 22, fontWeight: 800, marginBottom: 24 }}>Finances</h1>
-
+    <div style={{ padding: '24px 28px 40px' }}>
       {pending.length > 0 && (
         <div className="card" style={{ padding: 20, marginBottom: 24, border: '1.5px solid #E89B3C' }}>
           <h3 style={{ marginBottom: 12 }}>Dépôts en attente ({pending.length})</h3>

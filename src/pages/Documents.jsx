@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Check, X, Eye, RefreshCw } from 'lucide-react'
-import { TopBar, StatusBadge, EmptyState, SearchBar, Modal, PageHeader, Loading } from '../components/UI'
+import { StatusBadge, EmptyState, SearchBar, Modal, Loading } from '../components/UI'
 import { DOC_LABELS } from '../constants/documentTypes'
 import { documentsService } from '../services/api'
 import { useRealtimeSync } from '../hooks/useRealtimeSync'
@@ -80,16 +80,14 @@ export default function Documents() {
 
   return (
     <div className="fade-in">
-      <TopBar title="Documents" panicCount={0} />
-
-      <div style={{ padding: '24px 28px' }}>
-        <PageHeader title="Documents" subtitle={`${pendingCount} en attente de vérification`}>
+      <div style={{ padding: '24px 28px 40px' }}>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: 13, color: 'var(--text2)', marginRight: 'auto' }}>
+            {pendingCount} document(s) en attente
+          </span>
           <button className="btn btn-ghost btn-sm" onClick={loadDocuments}>
             <RefreshCw size={14} /> Rafraîchir
           </button>
-        </PageHeader>
-
-        <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un chauffeur..." />
           <select
             value={statusFilter}

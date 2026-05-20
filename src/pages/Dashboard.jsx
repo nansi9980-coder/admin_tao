@@ -13,7 +13,7 @@ import {
   subscriptionsService, investorsService, plansService,
 } from '../services/api'
 import {
-  StatCard, PageHeader, Loading, StatusBadge, Avatar,
+  StatCard, Loading, StatusBadge, Avatar,
 } from '../components/UI'
 import DataTable from '../components/DataTable'
 import { useRealtimeSync } from '../hooks/useRealtimeSync'
@@ -95,20 +95,17 @@ export default function Dashboard() {
 
   return (
     <div style={{ padding: '24px 28px 40px', maxWidth: 1400 }}>
-      <PageHeader
-        title="Vue d'ensemble"
-        subtitle="TAOMAN Group Investments — indicateurs, graphiques et files d'attente"
-      >
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 10, marginBottom: 20 }}>
         <button type="button" className="btn btn-ghost btn-sm" onClick={load} disabled={loading}>
-          <RefreshCw size={14} className={loading ? 'spinner-inline' : ''} style={loading ? { animation: 'spin 0.8s linear infinite' } : {}} />
+          <RefreshCw size={14} style={loading ? { animation: 'spin 0.8s linear infinite' } : {}} />
           Actualiser
         </button>
         {lastSync && (
-          <span style={{ fontSize: 11, color: 'var(--text3)', alignSelf: 'center' }}>
+          <span style={{ fontSize: 11, color: 'var(--text3)' }}>
             MAJ {lastSync.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
           </span>
         )}
-      </PageHeader>
+      </div>
 
       {/* Alertes */}
       {(stats?.pendingKyc > 0 || stats?.pendingDeposits > 0) && (

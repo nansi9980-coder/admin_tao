@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import { PageHeader } from '../components/UI'
-
 export default function Settings() {
   const [tab, setTab] = useState('profil')
   const user = (() => {
@@ -12,8 +10,7 @@ export default function Settings() {
   })()
 
   return (
-    <div style={{ padding: 28 }}>
-      <PageHeader title="Paramètres" subtitle="Configuration TAOMAN Admin" />
+    <div style={{ padding: '24px 28px 40px' }}>
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
         {['profil', 'api'].map(t => (
           <button key={t} className={`btn btn-sm ${tab === t ? 'btn-primary' : ''}`} onClick={() => setTab(t)}>

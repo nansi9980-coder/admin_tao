@@ -56,13 +56,8 @@ export default function Investors() {
   const formatName = (u) => [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email
 
   return (
-    <div style={{ display: 'flex', height: '100vh', flexDirection: 'column' }}>
-      <div style={{ padding: '22px 28px', borderBottom: '1.5px solid var(--border)' }}>
-        <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 22, fontWeight: 800 }}>Investisseurs</h1>
-        <p style={{ fontSize: 13, color: 'var(--text2)' }}>Gestion des comptes investisseurs TAOMAN</p>
-      </div>
-
-      <div style={{ padding: '16px 28px', display: 'flex', gap: 12, alignItems: 'center' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+      <div style={{ padding: '24px 28px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
         <SearchBar value={search} onChange={setSearch} placeholder="Rechercher..." />
         <FilterTabs options={STATUS_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
       </div>

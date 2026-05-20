@@ -20,10 +20,7 @@ export default function AuditLogs() {
   useEffect(() => { load() }, [load])
 
   return (
-    <div style={{ padding: 28 }}>
-      <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Journal de conformité</h1>
-      <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 24 }}>Audit log append-only (BCEAO/CREPMF)</p>
-
+    <div style={{ padding: '24px 28px 40px' }}>
       {loading ? <Loading /> : logs.length === 0 ? <EmptyState title="Aucun log" /> : (
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, fontFamily: 'monospace' }}>
           <thead>

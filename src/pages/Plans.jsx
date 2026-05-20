@@ -75,12 +75,8 @@ export default function Plans() {
   }
 
   return (
-    <div style={{ padding: 28 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <div>
-          <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 22, fontWeight: 800 }}>Plans d'investissement</h1>
-          <p style={{ fontSize: 13, color: 'var(--text2)' }}>Catalogue des projets TAOMAN</p>
-        </div>
+    <div style={{ padding: '24px 28px 40px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 20 }}>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nouveau plan</button>
       </div>
 

@@ -50,29 +50,35 @@ export function MiniStatCard({ label, value, color='var(--blue)', icon }) {
   )
 }
 
+/** Sous-titre + actions. Le titre principal est dans la TopBar (AdminLayout). */
 export function PageHeader({ title, subtitle, children }) {
   return (
     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:24,gap:12,flexWrap:'wrap'}}>
       <div>
-        <h1 style={{fontFamily:'Sora,sans-serif',fontSize:24,fontWeight:800,color:'var(--text)',letterSpacing:'-0.02em',marginBottom:4}}>{title}</h1>
-        {subtitle && <p style={{fontSize:13,color:'var(--text2)'}}>{subtitle}</p>}
+        {title && (
+          <h1 style={{fontFamily:'Sora,sans-serif',fontSize:24,fontWeight:800,color:'var(--text)',letterSpacing:'-0.02em',marginBottom:4}}>{title}</h1>
+        )}
+        {subtitle && <p style={{fontSize:13,color:'var(--text2)',margin: title ? 0 : undefined}}>{subtitle}</p>}
       </div>
-      {children && <div style={{display:'flex',gap:8,flexShrink:0}}>{children}</div>}
+      {children && <div style={{display:'flex',gap:8,flexShrink:0,alignItems:'center'}}>{children}</div>}
     </div>
   )
 }
 
-export function TopBar({ title, panicCount=0, onSearch }) {
+export function TopBar({ title, subtitle, panicCount=0, onSearch }) {
   return (
     <header style={{
-      height:'var(--header-h)',
+      minHeight:'var(--header-h)',
       background:'rgba(255,255,255,0.92)',backdropFilter:'blur(16px)',
       borderBottom:'1.5px solid rgba(43,95,245,0.08)',
-      padding:'0 28px',display:'flex',alignItems:'center',justifyContent:'space-between',
+      padding:'14px 28px',display:'flex',alignItems:'center',justifyContent:'space-between',
       position:'sticky',top:0,zIndex:40,
       boxShadow:'0 2px 12px rgba(43,95,245,0.06)',
     }}>
-      <h2 style={{fontFamily:'Sora,sans-serif',fontSize:18,fontWeight:700,color:'var(--text)'}}>{title}</h2>
+      <div>
+        <h2 style={{fontFamily:'Sora,sans-serif',fontSize:18,fontWeight:700,color:'var(--text)',margin:0,lineHeight:1.3}}>{title}</h2>
+        {subtitle && <p style={{fontSize:12,color:'var(--text2)',margin:'4px 0 0'}}>{subtitle}</p>}
+      </div>
       <div style={{display:'flex',alignItems:'center',gap:10}}>
         <div style={{position:'relative'}}>
           <svg style={{position:'absolute',left:11,top:'50%',transform:'translateY(-50%)',color:'var(--text3)'}} width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
