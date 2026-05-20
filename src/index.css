@@ -135,6 +135,8 @@ html, body, #root {
   border-radius:var(--radius-lg);
   box-shadow:var(--shadow-card);
 }
+.card-hover{transition:transform 0.2s,box-shadow 0.2s,border-color 0.2s;}
+.card-hover:hover{transform:translateY(-2px);box-shadow:var(--shadow-md);border-color:rgba(43,95,245,0.2);}
 
 .table-wrap{overflow:hidden;border-radius:var(--radius-lg);border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow-card);}
 table{width:100%;border-collapse:collapse;}

@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import { subscriptionsService } from '../services/api'
-import { Loading, EmptyState, StatusBadge } from '../components/UI'
+import { Loading, PageHeader, StatusBadge } from '../components/UI'
+import DataTable from '../components/DataTable'
 import { useRealtimeSync } from '../hooks/useRealtimeSync'
 
 const formatXof = (v) => {
@@ -27,33 +28,21 @@ export default function Subscriptions() {
   useRealtimeSync(load, { interval: 30000, topics: ['subscription'] })
 
   return (
-    <div style={{ padding: 28 }}>
-      <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 22, fontWeight: 800, marginBottom: 4 }}>Souscriptions</h1>
-      <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 24 }}>Suivi des investissements actifs</p>
+    <div style={{ padding: '24px 28px 40px', maxWidth: 1200 }}>
+      <PageHeader title="Souscriptions" subtitle="Suivi des investissements et statuts" />
 
-      {loading ? <Loading /> : items.length === 0 ? <EmptyState title="Aucune souscription" /> : (
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-          <thead>
-            <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text3)' }}>
-              <th style={{ textAlign: 'left', padding: 10 }}>Investisseur</th>
-              <th style={{ textAlign: 'left', padding: 10 }}>Plan</th>
-              <th style={{ textAlign: 'right', padding: 10 }}>Montant</th>
-              <th style={{ textAlign: 'left', padding: 10 }}>Statut</th>
-              <th style={{ textAlign: 'left', padding: 10 }}>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((s) => (
-              <tr key={s.id} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: 12 }}>{s.userName || '—'}</td>
-                <td style={{ padding: 12 }}>{s.planTitle || '—'}</td>
-                <td style={{ padding: 12, textAlign: 'right', fontWeight: 600 }}>{formatXof(s.amountXof)}</td>
-                <td style={{ padding: 12 }}><StatusBadge status={s.status} /></td>
-                <td style={{ padding: 12 }}>{new Date(s.createdAt).toLocaleDateString('fr-FR')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {loading ? <Loading /> : (
+        <DataTable
+          emptyMessage="Aucune souscription"
+          columns={[
+            { key: 'user', label: 'Investisseur', render: (s) => s.userName || '—' },
+            { key: 'plan', label: 'Plan', render: (s) => s.planTitle || '—' },
+            { key: 'amount', label: 'Montant', align: 'right', render: (s) => <strong>{formatXof(s.amountXof)}</strong> },
+            { key: 'status', label: 'Statut', render: (s) => <StatusBadge status={s.status} /> },
+            { key: 'date', label: 'Date', render: (s) => new Date(s.createdAt).toLocaleDateString('fr-FR') },
+          ]}
+          rows={items}
+        />
       )}
     </div>
   )

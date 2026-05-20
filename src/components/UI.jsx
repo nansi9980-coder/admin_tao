@@ -113,6 +113,10 @@ export function StatusBadge({ status }) {
     CARD:                     {cls:'badge-blue',   label:'Carte'},
     COMPLETED_TXN:            {cls:'badge-green',  label:'Complété'},
     FAILED:                   {cls:'badge-red',    label:'Échoué'},
+    SUCCESS:                  {cls:'badge-green',  label:'Réussi'},
+    OPEN:                     {cls:'badge-green',  label:'Ouvert'},
+    CLOSED:                   {cls:'badge-gray',   label:'Fermé'},
+    DRAFT:                    {cls:'badge-gray',   label:'Brouillon'},
   }
   const { cls = 'badge-gray', label = status || '—' } = cfg[status] || {}
   return <span className={`badge ${cls}`}>{label}</span>

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
+import AdminLayout from './components/AdminLayout'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import Documents from './pages/Documents'
@@ -82,16 +83,18 @@ export default function App() {
         <Sidebar badges={badges} user={user} onLogout={logout} />
         <main style={{ marginLeft: 'var(--sidebar-w)', flex: 1, minHeight: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/investors" element={<Investors />} />
-            <Route path="/investors/:id" element={<InvestorDetail />} />
-            <Route path="/subscriptions" element={<Subscriptions />} />
-            <Route path="/documents" element={<Documents />} />
-            <Route path="/plans" element={<Plans />} />
-            <Route path="/banners" element={<Banners />} />
-            <Route path="/finance" element={<Finance />} />
-            <Route path="/audit" element={<AuditLogs />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route element={<AdminLayout />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/investors" element={<Investors />} />
+              <Route path="/investors/:id" element={<InvestorDetail />} />
+              <Route path="/subscriptions" element={<Subscriptions />} />
+              <Route path="/documents" element={<Documents />} />
+              <Route path="/plans" element={<Plans />} />
+              <Route path="/banners" element={<Banners />} />
+              <Route path="/finance" element={<Finance />} />
+              <Route path="/audit" element={<AuditLogs />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>
