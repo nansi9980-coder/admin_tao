@@ -8,6 +8,38 @@ import { getDocumentSubmitterName } from '../utils/documentSubmitter'
 
 const FILTERS = ['ALL', 'PENDING', 'APPROVED', 'REJECTED']
 
+function DocImagePreview({ url, alt }) {
+  const [failed, setFailed] = useState(false)
+  if (!url) {
+    return (
+      <div style={{ height: 120, background: 'var(--surface2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--text3)', fontSize: 13 }}>
+        Aperçu non disponible
+      </div>
+    )
+  }
+  if (failed) {
+    return (
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ padding: 16, background: 'var(--surface2)', borderRadius: 10, fontSize: 13, color: 'var(--text2)' }}>
+          Impossible d&apos;afficher l&apos;image ici.
+        </div>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, color: 'var(--blue)' }}>
+          Ouvrir l&apos;image dans un nouvel onglet
+        </a>
+      </div>
+    )
+  }
+  return (
+    <img
+      src={url}
+      alt={alt}
+      referrerPolicy="no-referrer"
+      style={{ width: '100%', borderRadius: 10, border: '1px solid var(--border)', maxHeight: 400, objectFit: 'contain', marginBottom: 16, background: 'var(--surface2)' }}
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 export default function Documents() {
   const [documents,     setDocuments]     = useState([])
   const [loading,       setLoading]       = useState(true)
@@ -33,7 +65,12 @@ export default function Documents() {
   }, [statusFilter])
 
   useEffect(() => { loadDocuments() }, [loadDocuments])
-  useRealtimeSync(loadDocuments, { interval: 5000, topics: ['document', 'documents'], enabled: true })
+  useRealtimeSync(loadDocuments, {
+    interval: 60000,
+    debounceMs: 2000,
+    topics: ['document', 'documents'],
+    enabled: true,
+  })
 
   const getDriverName = getDocumentSubmitterName
   const getFileUrl    = doc => doc.fileUrl || doc.url || null
@@ -154,17 +191,7 @@ export default function Documents() {
           title={DOC_LABELS[selected.type] || selected.type}
           onClose={() => setSelected(null)}
         >
-          {getFileUrl(selected) ? (
-            <img
-              src={getFileUrl(selected)}
-              alt="document"
-              style={{ width: '100%', borderRadius: 10, border: '1px solid var(--border)', maxHeight: 300, objectFit: 'contain', marginBottom: 16, background: 'var(--surface2)' }}
-            />
-          ) : (
-            <div style={{ height: 120, background: 'var(--surface2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16, color: 'var(--text3)', fontSize: 13 }}>
-              Aperçu non disponible
-            </div>
-          )}
+          <DocImagePreview url={getFileUrl(selected)} alt={DOC_LABELS[selected.type] || 'Document KYC'} />
 
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
             <StatusBadge status={selected.status} />
@@ -174,7 +201,7 @@ export default function Documents() {
           </div>
 
           <div style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
-            <strong>Chauffeur :</strong> {getDriverName(selected)} &nbsp;•&nbsp; {formatDate(selected.createdAt || selected.uploadedAt)}
+            <strong>Investisseur :</strong> {getDriverName(selected)} &nbsp;•&nbsp; {formatDate(selected.createdAt || selected.uploadedAt)}
           </div>
 
           {selected.status === 'PENDING' && (

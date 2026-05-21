@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { uploadMultipart } from '../utils/upload'
 
 export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
 const BASE_URL = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`
@@ -18,11 +19,16 @@ api.interceptors.request.use((cfg) => {
 api.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      localStorage.removeItem('taoman_admin_token')
-      localStorage.removeItem('taoman_admin_user')
-      if (!window.location.pathname.includes('login')) {
-        window.location.href = '/'
+    const status = err.response?.status
+    const isAuthRoute = err.config?.url?.includes('admin/auth/')
+    if ((status === 401 || status === 403) && !isAuthRoute) {
+      const hadToken = localStorage.getItem('taoman_admin_token')
+      if (hadToken) {
+        localStorage.removeItem('taoman_admin_token')
+        localStorage.removeItem('taoman_admin_user')
+        if (!window.location.pathname.includes('login')) {
+          window.location.href = '/'
+        }
       }
     }
     return Promise.reject(err)
@@ -71,12 +77,30 @@ export const plansService = {
   create: (data) => api.post('admin/plans', data),
   update: (id, data) => api.patch(`admin/plans/${id}`, data),
   delete: (id) => api.delete(`admin/plans/${id}`),
+  uploadHero: (id, file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return uploadMultipart(`admin/plans/${id}/hero-image`, fd)
+  },
 }
 
 export const bannersService = {
   getAll: () => api.get('admin/banners'),
   create: (data) => api.post('admin/banners', data),
+  createWithFile: (file, fields = {}) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    Object.entries(fields).forEach(([k, v]) => {
+      if (v != null && v !== '') fd.append(k, String(v))
+    })
+    return uploadMultipart('admin/banners/upload', fd)
+  },
   update: (id, data) => api.patch(`admin/banners/${id}`, data),
+  uploadImage: (id, file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return uploadMultipart(`admin/banners/${id}/image`, fd)
+  },
   delete: (id) => api.delete(`admin/banners/${id}`),
 }
 

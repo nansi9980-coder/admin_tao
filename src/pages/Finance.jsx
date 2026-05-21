@@ -39,7 +39,7 @@ export default function Finance() {
     setLoading(false)
   }, [])
 
-  useRealtimeSync(load, { interval: 5000, topics: ['transaction', 'finance'] })
+  useRealtimeSync(load, { interval: 45000, debounceMs: 2000, topics: ['transaction', 'finance'] })
 
   const confirmTx = async (id) => {
     await financeService.confirmTransaction(id)

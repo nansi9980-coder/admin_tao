@@ -70,7 +70,8 @@ export default function App() {
 
   useRealtimeSync(loadBadges, {
     enabled: Boolean(user),
-    interval: 5000,
+    interval: 45000,
+    debounceMs: 2000,
     topics: ['document', 'documents', 'kyc', 'transaction', 'finance'],
   })
 

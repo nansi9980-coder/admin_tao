@@ -1,0 +1,16 @@
+import axios from 'axios'
+import { API_BASE } from '../services/api'
+
+const BASE_URL = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`
+
+export async function uploadMultipart(path, formData) {
+  const token = localStorage.getItem('taoman_admin_token')
+  const res = await axios.post(`${BASE_URL}${path.replace(/^\//, '')}`, formData, {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : undefined,
+      'Content-Type': 'multipart/form-data',
+    },
+    timeout: 120000,
+  })
+  return res.data
+}

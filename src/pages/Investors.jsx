@@ -29,7 +29,7 @@ export default function Investors() {
     setLoading(false)
   }, [statusFilter, search])
 
-  useRealtimeSync(load, { interval: 5000, topics: ['user', 'users'] })
+  useRealtimeSync(load, { interval: 45000, debounceMs: 2000, topics: ['user', 'users'] })
 
   const toggleSuspend = async (u) => {
     try {

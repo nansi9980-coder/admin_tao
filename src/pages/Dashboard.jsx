@@ -76,7 +76,7 @@ export default function Dashboard() {
   }, [chartPeriod])
 
   useEffect(() => { load() }, [load])
-  useRealtimeSync(load, { interval: 5000, topics: ['dashboard', 'kyc', 'transaction', 'finance', 'subscription', 'user'] })
+  useRealtimeSync(load, { interval: 45000, debounceMs: 2000, topics: ['dashboard', 'kyc', 'transaction', 'finance', 'subscription', 'user'] })
 
   const confirmDeposit = async (id) => {
     await financeService.confirmTransaction(id)
