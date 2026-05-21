@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { API_BASE } from '../services/api'
+import { API_BASE } from '../config/apiBase'
 
 const BASE_URL = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`
 

@@ -1,7 +1,8 @@
 import axios from 'axios'
+import { API_BASE } from '../config/apiBase'
 import { uploadMultipart } from '../utils/upload'
 
-export const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3000/v1'
+export { API_BASE }
 const BASE_URL = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`
 
 const api = axios.create({
