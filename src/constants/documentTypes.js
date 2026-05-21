@@ -1,7 +1,11 @@
 export const DOC_LABELS = {
   ID_CARD_FRONT: 'CNI Recto',
   ID_CARD_BACK: 'CNI Verso',
+  CNI_RECTO: 'CNI Recto',
+  CNI_VERSO: 'CNI Verso',
   PASSPORT: 'Passeport',
+  RESIDENCE: 'Carte de séjour',
+  DRIVER_LICENSE: 'Permis de conduire',
   SELFIE: 'Selfie',
   SELFIE_WITH_ID: 'Selfie + CNI',
   DRIVERS_LICENSE: 'Permis de conduire',
