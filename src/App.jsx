@@ -11,6 +11,8 @@ import Finance from './pages/Finance'
 import AuditLogs from './pages/AuditLogs'
 import Plans from './pages/Plans'
 import Banners from './pages/Banners'
+import ServiceRequests from './pages/ServiceRequests'
+import ServiceSectors from './pages/ServiceSectors'
 import InvestorDetail from './pages/InvestorDetail'
 import Settings from './pages/Settings'
 import { documentsService, financeService } from './services/api'
@@ -72,7 +74,7 @@ export default function App() {
     enabled: Boolean(user),
     interval: 45000,
     debounceMs: 2000,
-    topics: ['document', 'documents', 'kyc', 'transaction', 'finance'],
+    topics: ['document', 'documents', 'kyc', 'transaction', 'finance', 'service-request'],
   })
 
   if (!user) return <Login onLogin={handleLogin} />
@@ -90,6 +92,8 @@ export default function App() {
               <Route path="/investors/:id" element={<InvestorDetail />} />
               <Route path="/subscriptions" element={<Subscriptions />} />
               <Route path="/documents" element={<Documents />} />
+              <Route path="/service-requests" element={<ServiceRequests />} />
+              <Route path="/service-sectors" element={<ServiceSectors />} />
               <Route path="/plans" element={<Plans />} />
               <Route path="/banners" element={<Banners />} />
               <Route path="/finance" element={<Finance />} />

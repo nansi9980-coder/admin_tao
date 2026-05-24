@@ -109,4 +109,26 @@ export const auditService = {
   getAll: (params = {}) => api.get(`admin/audit-logs?${new URLSearchParams(params)}`),
 }
 
+export const serviceSectorsService = {
+  getAll: () => api.get('admin/service-sectors'),
+  create: (data) => api.post('admin/service-sectors', data),
+  update: (id, data) => api.patch(`admin/service-sectors/${id}`, data),
+  delete: (id) => api.delete(`admin/service-sectors/${id}`),
+  uploadHero: (id, file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return uploadMultipart(`admin/service-sectors/${id}/hero-image`, fd)
+  },
+  createOffer: (sectorId, data) => api.post(`admin/service-sectors/${sectorId}/offers`, data),
+  updateOffer: (offerId, data) => api.patch(`admin/service-offers/${offerId}`, data),
+  deleteOffer: (offerId) => api.delete(`admin/service-offers/${offerId}`),
+}
+
+export const serviceRequestsService = {
+  getAll: (params = {}) => api.get(`admin/service-requests?${new URLSearchParams(params)}`),
+  getOne: (id) => api.get(`admin/service-requests/${id}`),
+  update: (id, data) => api.patch(`admin/service-requests/${id}`, data),
+  delete: (id) => api.delete(`admin/service-requests/${id}`),
+}
+
 export default api

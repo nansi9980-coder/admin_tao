@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import {
   LayoutDashboard, Users, ArrowLeftRight, FileText, Wallet,
-  Settings, LogOut, TrendingUp, Shield, Image,
+  Settings, LogOut, TrendingUp, Shield, Image, ClipboardList, Briefcase,
 } from 'lucide-react'
 import logoPng from '../assets/logo.png'
 
@@ -10,6 +10,8 @@ const NAV = [
   { to: '/investors', label: 'Investisseurs', icon: Users },
   { to: '/subscriptions', label: 'Souscriptions', icon: ArrowLeftRight },
   { to: '/documents', label: 'Documents KYC', icon: FileText, badge: 'docs' },
+  { to: '/service-requests', label: 'Demandes services', icon: ClipboardList },
+  { to: '/service-sectors', label: 'Secteurs services', icon: Briefcase },
   { to: '/plans', label: 'Plans', icon: TrendingUp },
   { to: '/banners', label: 'Bannières', icon: Image },
   { to: '/finance', label: 'Finances', icon: Wallet, badge: 'finance' },

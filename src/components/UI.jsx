@@ -123,6 +123,9 @@ export function StatusBadge({ status }) {
     OPEN:                     {cls:'badge-green',  label:'Ouvert'},
     CLOSED:                   {cls:'badge-gray',   label:'Fermé'},
     DRAFT:                    {cls:'badge-gray',   label:'Brouillon'},
+    CONTACTED:                {cls:'badge-blue',   label:'Contacté'},
+    QUOTED:                   {cls:'badge-teal',   label:'Devis envoyé'},
+    CONFIRMED:                {cls:'badge-green',  label:'Confirmé'},
   }
   const { cls = 'badge-gray', label = status || '—' } = cfg[status] || {}
   return <span className={`badge ${cls}`}>{label}</span>

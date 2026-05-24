@@ -18,6 +18,14 @@ const PAGE_META = {
     title: 'Documents KYC',
     subtitle: 'Vérification des pièces d\'identité',
   },
+  '/service-requests': {
+    title: 'Demandes de services',
+    subtitle: 'Devis et réservations envoyés depuis l\'application',
+  },
+  '/service-sectors': {
+    title: 'Secteurs services',
+    subtitle: 'Contenu affiché dans la partie services mobile',
+  },
   '/plans': {
     title: 'Plans d\'investissement',
     subtitle: 'Catalogue des projets TAOMAN',
