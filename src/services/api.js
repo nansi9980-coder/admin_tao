@@ -109,6 +109,10 @@ export const auditService = {
   getAll: (params = {}) => api.get(`admin/audit-logs?${new URLSearchParams(params)}`),
 }
 
+/** Aperçu identique à l'app mobile (endpoint public, sans auth). */
+export const publicServiceSectorsPreview = () =>
+  axios.get(`${API_BASE.replace(/\/$/, '')}/public/service-sectors`).then((r) => r.data)
+
 export const serviceSectorsService = {
   getAll: () => api.get('admin/service-sectors'),
   create: (data) => api.post('admin/service-sectors', data),
