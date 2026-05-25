@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import CountUp from 'react-countup'
+import { ResponsiveContainer, Area, AreaChart } from 'recharts'
 
 export function Icon({ path, size=16, color='currentColor', fill='none', strokeWidth=1.8 }) {
   return (
@@ -8,12 +10,13 @@ export function Icon({ path, size=16, color='currentColor', fill='none', strokeW
   )
 }
 
-export function StatCard({ label, value, sub, trend, color='var(--blue)', iconPath, delay=0, onClick }) {
+export function StatCard({ label, value, sub, trend, color='var(--blue)', iconPath, delay=0, onClick, sparkline, suffix='' }) {
   const positive = trend && !String(trend).startsWith('-')
+  const numericValue = typeof value === 'number' ? value : Number(String(value || '').replace(/[^\d.-]/g, ''))
+  const showCountUp = !isNaN(numericValue) && isFinite(numericValue) && value !== undefined && value !== null && value !== ''
   return (
     <div className="card card-hover fade-up" onClick={onClick}
       style={{padding:'20px',animationDelay:`${delay}ms`,cursor:onClick?'pointer':'default',transition:'all 0.2s',position:'relative',overflow:'hidden'}}>
-      {/* Accent line */}
       <div style={{position:'absolute',top:0,left:0,right:0,height:3,background:`linear-gradient(90deg,${color},${color}88)`,borderRadius:'14px 14px 0 0'}}/>
       <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
         <div style={{width:42,height:42,borderRadius:12,background:`${color}15`,display:'flex',alignItems:'center',justifyContent:'center',border:`1.5px solid ${color}25`}}>
@@ -28,10 +31,60 @@ export function StatCard({ label, value, sub, trend, color='var(--blue)', iconPa
         )}
       </div>
       <div style={{color:'var(--text3)',fontSize:11,fontWeight:700,letterSpacing:'0.06em',textTransform:'uppercase',marginBottom:6}}>{label}</div>
-      <div className="count-up" style={{fontFamily:'Sora,sans-serif',fontWeight:800,fontSize:28,color:'var(--text)',letterSpacing:'-0.03em',animationDelay:`${delay+100}ms`}}>
-        {value ?? <div className="skeleton" style={{height:32,width:80}}/>}
+      <div style={{fontFamily:'Sora,sans-serif',fontWeight:800,fontSize:28,color:'var(--text)',letterSpacing:'-0.03em'}}>
+        {value == null || value === '' ? <div className="skeleton" style={{height:32,width:80}}/> :
+          showCountUp ? (
+            <CountUp end={numericValue} duration={1.4} separator=" " suffix={suffix} preserveValue />
+          ) : (
+            <span>{value}</span>
+          )
+        }
       </div>
       {sub && <div style={{fontSize:12,color:'var(--text3)',marginTop:4}}>{sub}</div>}
+      {sparkline && sparkline.length > 1 && (
+        <div style={{ height: 38, marginTop: 10, marginLeft: -8, marginRight: -8 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={sparkline} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`spark-${color}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={color} stopOpacity={0.35} />
+                  <stop offset="100%" stopColor={color} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey="v" stroke={color} fill={`url(#spark-${color})`} strokeWidth={1.8} dot={false} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function Skeleton({ height = 16, width = '100%', radius = 8, style }) {
+  return (
+    <div
+      className="skeleton"
+      style={{
+        height, width, borderRadius: radius,
+        background: 'linear-gradient(90deg, var(--surface2) 25%, var(--surface3) 50%, var(--surface2) 75%)',
+        backgroundSize: '200% 100%',
+        animation: 'shimmer 1.4s ease-in-out infinite',
+        ...style,
+      }}
+    />
+  )
+}
+
+export function SkeletonCard({ height = 120 }) {
+  return (
+    <div className="card" style={{ padding: 18 }}>
+      <Skeleton height={14} width={120} />
+      <div style={{ marginTop: 12 }}>
+        <Skeleton height={32} width={'70%'} />
+      </div>
+      <div style={{ marginTop: 16 }}>
+        <Skeleton height={height - 60} radius={10} />
+      </div>
     </div>
   )
 }

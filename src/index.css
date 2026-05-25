@@ -41,6 +41,23 @@
   --shadow-card:0 2px 8px rgba(13,27,75,0.06), 0 0 0 1px rgba(59,96,230,0.08);
 }
 
+[data-theme='dark'] {
+  --bg:         #0A1628;
+  --bg2:        #0B1F38;
+  --surface:    #11243F;
+  --surface2:   #16294A;
+  --surface3:   #1C355A;
+  --border:     rgba(151,179,255,0.12);
+  --border2:    rgba(151,179,255,0.2);
+  --text:       #F1F5FF;
+  --text2:      #B5C5E8;
+  --text3:      #7A9CC9;
+  --text4:      #4D6494;
+  --shadow:     0 4px 16px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-card:0 2px 8px rgba(0,0,0,0.4), 0 0 0 1px rgba(151,179,255,0.08);
+}
+
 html, body, #root {
   height: 100%;
   font-family: 'Plus Jakarta Sans', sans-serif;
@@ -64,6 +81,19 @@ html, body, #root {
 @keyframes countUp  { from{opacity:0;transform:scale(0.85);}to{opacity:1;transform:scale(1);} }
 @keyframes glow     { 0%,100%{box-shadow:0 0 0 0 rgba(43,95,245,0.35);}50%{box-shadow:0 0 0 8px rgba(43,95,245,0);} }
 @keyframes slideDown{ from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);} }
+
+.react-calendar-heatmap text { font-size: 8px; fill: var(--text3); }
+.react-calendar-heatmap rect { rx: 2; }
+.react-calendar-heatmap .heatmap-empty { fill: var(--surface3); }
+.react-calendar-heatmap .heatmap-l1 { fill: rgba(43, 95, 245, 0.25); }
+.react-calendar-heatmap .heatmap-l2 { fill: rgba(43, 95, 245, 0.5); }
+.react-calendar-heatmap .heatmap-l3 { fill: rgba(43, 95, 245, 0.75); }
+.react-calendar-heatmap .heatmap-l4 { fill: rgba(43, 95, 245, 1); }
+.heatmap-empty { background: var(--surface3); }
+.heatmap-l1 { background: rgba(43, 95, 245, 0.25); }
+.heatmap-l2 { background: rgba(43, 95, 245, 0.5); }
+.heatmap-l3 { background: rgba(43, 95, 245, 0.75); }
+.heatmap-l4 { background: rgba(43, 95, 245, 1); }
 
 .fade-up  { animation: fadeUp  0.4s cubic-bezier(.16,1,.3,1) both; }
 .fade-in  { animation: fadeIn  0.25s ease both; }

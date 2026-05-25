@@ -11,11 +11,14 @@ import {
 import {
   dashboardService, documentsService, financeService,
   subscriptionsService, investorsService, plansService,
+  auditService,
 } from '../services/api'
 import {
-  StatCard, Loading, StatusBadge, Avatar,
+  StatCard, Loading, StatusBadge, Avatar, SkeletonCard,
 } from '../components/UI'
 import DataTable from '../components/DataTable'
+import ActivityFeed from '../components/ActivityFeed'
+import ActivityHeatmap from '../components/ActivityHeatmap'
 import { useRealtimeSync } from '../hooks/useRealtimeSync'
 
 const formatXof = (v, compact = false) => {
@@ -38,6 +41,7 @@ export default function Dashboard() {
   const [recentSubs, setRecentSubs] = useState([])
   const [recentUsers, setRecentUsers] = useState([])
   const [plans, setPlans] = useState([])
+  const [auditLogs, setAuditLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [lastSync, setLastSync] = useState(null)
 
@@ -45,7 +49,7 @@ export default function Dashboard() {
     setLoading(true)
     try {
       const [
-        s, fin, c, docs, dep, subs, users, plansList,
+        s, fin, c, docs, dep, subs, users, plansList, logs,
       ] = await Promise.all([
         dashboardService.getStats(),
         financeService.getStats(),
@@ -55,6 +59,7 @@ export default function Dashboard() {
         subscriptionsService.getAll({ limit: 8, page: 1 }),
         investorsService.getAll({ limit: 6, page: 1 }),
         plansService.getAll(),
+        auditService ? auditService.getAll({ limit: 30 }).catch(() => null) : Promise.resolve(null),
       ])
       setStats(s)
       setFinanceStats(fin)
@@ -68,6 +73,8 @@ export default function Dashboard() {
       setRecentSubs(subs?.items || [])
       setRecentUsers(users?.items || [])
       setPlans(Array.isArray(plansList) ? plansList.slice(0, 4) : [])
+      const logsItems = Array.isArray(logs?.items) ? logs.items : Array.isArray(logs) ? logs : []
+      setAuditLogs(logsItems)
       setLastSync(new Date())
     } catch {
       setStats(null)
@@ -91,7 +98,59 @@ export default function Dashboard() {
     { name: 'Souscriptions', value: Number(financeStats.totalSubscriptionsXof || 0) / 100, fill: '#10B981' },
   ] : []
 
-  if (loading && !stats) return <Loading text="Chargement du tableau de bord..." />
+  // Build sparklines for KPI cards from chart data
+  const depositSpark = chart.map((d) => ({ v: d.deposits }))
+  const withdrawalSpark = chart.map((d) => ({ v: d.withdrawals }))
+
+  // Aggregate audit logs by day for heatmap (last 90 days)
+  const heatmapValues = (() => {
+    const byDay = new Map()
+    for (const log of auditLogs) {
+      if (!log.createdAt) continue
+      const d = new Date(log.createdAt).toISOString().slice(0, 10)
+      byDay.set(d, (byDay.get(d) || 0) + 1)
+    }
+    return Array.from(byDay.entries()).map(([date, count]) => ({ date, count }))
+  })()
+
+  // Build activity feed from recent items
+  const activityItems = [
+    ...recentSubs.slice(0, 5).map((s) => ({
+      id: `sub-${s.id}`,
+      title: `${s.userName || 'Investisseur'} → ${s.planTitle}`,
+      body: `Souscription ${formatXof(s.amountXof, true)}`,
+      createdAt: s.createdAt,
+      color: '#10B981',
+    })),
+    ...pendingDocs.slice(0, 5).map((d) => ({
+      id: `doc-${d.id}`,
+      title: `KYC ${d.type}`,
+      body: `${d.submitterName || d.user?.email || ''} en attente`,
+      createdAt: d.createdAt,
+      color: '#E89B3C',
+    })),
+    ...pendingDeposits.slice(0, 5).map((d) => ({
+      id: `dep-${d.id}`,
+      title: `Dépôt ${formatXof(d.amountXof, true)}`,
+      body: d.userEmail || 'En attente de confirmation',
+      createdAt: d.createdAt,
+      color: '#F59E0B',
+    })),
+  ].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+
+  if (loading && !stats) {
+    return (
+      <div style={{ padding: '24px 28px 40px', maxWidth: 1400 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
+          {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} height={140} />)}
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
+          <SkeletonCard height={280} />
+          <SkeletonCard height={280} />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ padding: '24px 28px 40px', maxWidth: 1400 }}>
@@ -125,19 +184,25 @@ export default function Dashboard() {
       )}
 
       {/* KPIs */}
-      <div className="stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
+      <div className="stagger" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 24 }}>
         <StatCard label="Investisseurs" value={stats?.totalUsers ?? 0} color="#2B5FF5" delay={0}
           iconPath="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 7a4 4 0 1 0 8 0M9 7a4 4 0 0 1 8 0" />
         <StatCard label="Souscriptions actives" value={stats?.activeSubscriptions ?? 0} color="#10B981" delay={60}
-          iconPath="M22 12h-4l-3 9L9 3l-3 9H2" />
+          iconPath="M22 12h-4l-3 9L9 3l-3 9H2" sparkline={depositSpark} />
         <StatCard label="KYC en attente" value={stats?.pendingKyc ?? 0} color="#E89B3C" delay={120}
           iconPath="M9 12l2 2 4-4M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
         <StatCard label="Dépôts en attente" value={stats?.pendingDeposits ?? 0} color="#F59E0B" delay={180}
-          iconPath="M12 8v8m0 0H8m4 0h4m4-8a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v8" />
+          iconPath="M12 8v8m0 0H8m4 0h4m4-8a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v8" sparkline={withdrawalSpark} />
         <StatCard label="Plans ouverts" value={stats?.plansOpen ?? 0} color="#8B5CF6" delay={240}
           iconPath="M4 6h16M4 10h16M4 14h16M4 18h16" />
         <StatCard label="Collecté total" value={formatXof(stats?.totalCollectedXof, true)} color="#1E5BB8" delay={300}
           iconPath="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </div>
+
+      {/* Heatmap 90j + Activity feed */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 2fr) minmax(280px, 1fr)', gap: 20, marginBottom: 24 }}>
+        <ActivityHeatmap values={heatmapValues} days={90} />
+        <ActivityFeed items={activityItems} />
       </div>
 
       {/* Graphiques */}

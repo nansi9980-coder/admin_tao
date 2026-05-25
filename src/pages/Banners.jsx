@@ -2,12 +2,16 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { bannersService } from '../services/api'
 import { Loading, EmptyState } from '../components/UI'
 
+const MAX_VIDEO_MB = 50
+const ACCEPT = 'image/*,video/mp4,video/webm'
+
 export default function Banners() {
   const [banners, setBanners] = useState([])
   const [loading, setLoading] = useState(true)
   const [form, setForm] = useState({ title: '', caption: '', linkUrl: '', order: 0 })
-  const [imageFile, setImageFile] = useState(null)
+  const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
+  const [isVideo, setIsVideo] = useState(false)
   const [saving, setSaving] = useState(false)
   const fileRef = useRef(null)
 
@@ -25,21 +29,27 @@ export default function Banners() {
   useEffect(() => { load() }, [load])
 
   const onPickFile = (e) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-    setImageFile(file)
-    setPreview(URL.createObjectURL(file))
+    const f = e.target.files?.[0]
+    if (!f) return
+    const video = f.type?.startsWith('video/')
+    if (video && f.size > MAX_VIDEO_MB * 1024 * 1024) {
+      alert(`La vidéo dépasse ${MAX_VIDEO_MB} Mo`)
+      return
+    }
+    setFile(f)
+    setIsVideo(video)
+    setPreview(URL.createObjectURL(f))
   }
 
   const create = async (e) => {
     e.preventDefault()
-    if (!imageFile) {
-      alert('Choisissez une image depuis votre appareil')
+    if (!file) {
+      alert('Choisissez une image ou une vidéo depuis votre appareil')
       return
     }
     setSaving(true)
     try {
-      await bannersService.createWithFile(imageFile, {
+      await bannersService.createWithFile(file, {
         title: form.title,
         caption: form.caption,
         linkUrl: form.linkUrl,
@@ -47,8 +57,9 @@ export default function Banners() {
         active: true,
       })
       setForm({ title: '', caption: '', linkUrl: '', order: 0 })
-      setImageFile(null)
+      setFile(null)
       setPreview(null)
+      setIsVideo(false)
       if (fileRef.current) fileRef.current.value = ''
       load()
     } catch (err) {
@@ -62,9 +73,13 @@ export default function Banners() {
     load()
   }
 
-  const replaceImage = async (b, file) => {
-    if (!file) return
-    await bannersService.uploadImage(b.id, file)
+  const replaceMedia = async (b, f) => {
+    if (!f) return
+    if (f.type?.startsWith('video/') && f.size > MAX_VIDEO_MB * 1024 * 1024) {
+      alert(`La vidéo dépasse ${MAX_VIDEO_MB} Mo`)
+      return
+    }
+    await bannersService.uploadImage(b.id, f)
     load()
   }
 
@@ -83,13 +98,20 @@ export default function Banners() {
         <input className="input" placeholder="Lien (optionnel)" value={form.linkUrl} onChange={e => setForm(f => ({ ...f, linkUrl: e.target.value }))} />
 
         {preview && (
-          <img src={preview} alt="Aperçu" style={{ width: '100%', maxHeight: 120, objectFit: 'cover', borderRadius: 8 }} />
+          isVideo ? (
+            <video src={preview} controls muted style={{ width: '100%', maxHeight: 220, borderRadius: 8, background: '#000' }} />
+          ) : (
+            <img src={preview} alt="Aperçu" style={{ width: '100%', maxHeight: 180, objectFit: 'cover', borderRadius: 8 }} />
+          )
         )}
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={onPickFile} />
+        <input ref={fileRef} type="file" accept={ACCEPT} style={{ display: 'none' }} onChange={onPickFile} />
         <button type="button" className="btn btn-sm" onClick={() => fileRef.current?.click()}>
-          Choisir une image depuis l&apos;appareil
+          Choisir un média (image ou vidéo)
         </button>
-        {imageFile && <span style={{ fontSize: 12, color: 'var(--text2)' }}>{imageFile.name}</span>}
+        <span style={{ fontSize: 11, color: 'var(--text3)' }}>
+          Formats acceptés : JPG, PNG, WebP, MP4, WebM. Vidéo ≤ {MAX_VIDEO_MB} Mo, durée recommandée 10-20 s.
+        </span>
+        {file && <span style={{ fontSize: 12, color: 'var(--text2)' }}>{file.name} {isVideo && '· VIDÉO'}</span>}
 
         <button type="submit" className="btn btn-primary" disabled={saving}>
           {saving ? 'Envoi…' : 'Ajouter'}
@@ -98,30 +120,42 @@ export default function Banners() {
 
       {loading ? <Loading /> : banners.length === 0 ? <EmptyState title="Aucune bannière" /> : (
         <div style={{ display: 'grid', gap: 12 }}>
-          {banners.map(b => (
-            <div key={b.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
-              {b.imageUrl ? (
-                <img src={b.imageUrl} alt="" style={{ width: 120, height: 60, objectFit: 'cover', borderRadius: 8 }} />
-              ) : (
-                <div style={{ width: 120, height: 60, background: 'var(--surface2)', borderRadius: 8 }} />
-              )}
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 600 }}>{b.title || 'Sans titre'}</div>
-                <div style={{ fontSize: 12, color: 'var(--text2)' }}>{b.caption}</div>
+          {banners.map(b => {
+            const isVid = b.mediaType === 'VIDEO'
+            return (
+              <div key={b.id} className="card" style={{ padding: 16, display: 'flex', gap: 16, alignItems: 'center' }}>
+                <div style={{ position: 'relative', width: 120, height: 70, flexShrink: 0 }}>
+                  {b.imageUrl ? (
+                    <img src={b.thumbnailUrl || b.imageUrl} alt="" style={{ width: 120, height: 70, objectFit: 'cover', borderRadius: 8 }} />
+                  ) : (
+                    <div style={{ width: 120, height: 70, background: 'var(--surface2)', borderRadius: 8 }} />
+                  )}
+                  {isVid && (
+                    <span style={{
+                      position: 'absolute', top: 4, left: 4, padding: '2px 6px',
+                      borderRadius: 4, background: '#E89B3C', color: '#fff',
+                      fontSize: 9, fontWeight: 700, letterSpacing: 0.6,
+                    }}>VIDÉO</span>
+                  )}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontWeight: 600 }}>{b.title || 'Sans titre'}</div>
+                  <div style={{ fontSize: 12, color: 'var(--text2)' }}>{b.caption}</div>
+                </div>
+                <label className="btn btn-sm btn-ghost" style={{ cursor: 'pointer' }}>
+                  Remplacer
+                  <input
+                    type="file"
+                    accept={ACCEPT}
+                    hidden
+                    onChange={(e) => replaceMedia(b, e.target.files?.[0])}
+                  />
+                </label>
+                <button className="btn btn-sm" onClick={() => toggle(b)}>{b.active ? 'Désactiver' : 'Activer'}</button>
+                <button className="btn btn-sm" onClick={() => remove(b.id)}>Supprimer</button>
               </div>
-              <label className="btn btn-sm btn-ghost" style={{ cursor: 'pointer' }}>
-                Remplacer image
-                <input
-                  type="file"
-                  accept="image/*"
-                  hidden
-                  onChange={(e) => replaceImage(b, e.target.files?.[0])}
-                />
-              </label>
-              <button className="btn btn-sm" onClick={() => toggle(b)}>{b.active ? 'Désactiver' : 'Activer'}</button>
-              <button className="btn btn-sm" onClick={() => remove(b.id)}>Supprimer</button>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
     </div>

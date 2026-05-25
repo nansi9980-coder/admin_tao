@@ -77,6 +77,7 @@ export const plansService = {
   getAll: () => api.get('admin/plans'),
   create: (data) => api.post('admin/plans', data),
   update: (id, data) => api.patch(`admin/plans/${id}`, data),
+  reorder: (ids) => api.post('admin/plans/reorder', { ids }),
   delete: (id) => api.delete(`admin/plans/${id}`),
   uploadHero: (id, file) => {
     const fd = new FormData()
@@ -117,6 +118,7 @@ export const serviceSectorsService = {
   getAll: () => api.get('admin/service-sectors'),
   create: (data) => api.post('admin/service-sectors', data),
   update: (id, data) => api.patch(`admin/service-sectors/${id}`, data),
+  reorder: (ids) => api.post('admin/service-sectors/reorder', { ids }),
   delete: (id) => api.delete(`admin/service-sectors/${id}`),
   uploadHero: (id, file) => {
     const fd = new FormData()
@@ -129,10 +131,25 @@ export const serviceSectorsService = {
 }
 
 export const serviceRequestsService = {
-  getAll: (params = {}) => api.get(`admin/service-requests?${new URLSearchParams(params)}`),
+  getAll: (params = {}) => {
+    const p = typeof params === 'string' ? { status: params } : params
+    return api.get(`admin/service-requests?${new URLSearchParams(p)}`)
+  },
   getOne: (id) => api.get(`admin/service-requests/${id}`),
   update: (id, data) => api.patch(`admin/service-requests/${id}`, data),
+  quote: (id, amountXof, notes) => api.post(`admin/service-requests/${id}/quote`, { amountXof, notes }),
+  reject: (id, reason) => api.post(`admin/service-requests/${id}/reject`, { reason }),
   delete: (id) => api.delete(`admin/service-requests/${id}`),
+}
+
+export const adminUsersService = {
+  getAll: () => api.get('admin/admin-users'),
+  create: (data) => api.post('admin/admin-users', data),
+  update: (id, data) => api.patch(`admin/admin-users/${id}`, data),
+  disable: (id) => api.patch(`admin/admin-users/${id}/disable`),
+  enable: (id) => api.patch(`admin/admin-users/${id}/enable`),
+  forcePasswordChange: (id) => api.patch(`admin/admin-users/${id}/force-password-change`),
+  resetPassword: (id, password) => api.post(`admin/admin-users/${id}/reset-password`, password ? { password } : {}),
 }
 
 export default api

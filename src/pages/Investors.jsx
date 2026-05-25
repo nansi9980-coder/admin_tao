@@ -1,8 +1,12 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Download, Check, Pause } from 'lucide-react'
+import toast from 'react-hot-toast'
 import { investorsService } from '../services/api'
 import { SearchBar, StatusBadge, Loading, EmptyState, FilterTabs } from '../components/UI'
+import BulkActionsBar from '../components/BulkActionsBar'
 import { useRealtimeSync } from '../hooks/useRealtimeSync'
+import { exportToCsv } from '../utils/exportCsv'
 
 const STATUS_OPTIONS = ['ALL', 'ACTIVE', 'PENDING_VERIFICATION', 'SUSPENDED', 'CLOSED']
 
@@ -13,6 +17,7 @@ export default function Investors() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [selected, setSelected] = useState(new Set())
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -55,11 +60,59 @@ export default function Investors() {
 
   const formatName = (u) => [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email
 
+  const toggleSelect = (id) => {
+    setSelected((s) => {
+      const n = new Set(s)
+      if (n.has(id)) n.delete(id); else n.add(id)
+      return n
+    })
+  }
+  const toggleAll = () => {
+    setSelected((s) => {
+      if (s.size === investors.length) return new Set()
+      return new Set(investors.map((u) => u.id))
+    })
+  }
+  const clearSelection = () => setSelected(new Set())
+
+  const exportCsv = () => {
+    const rows = investors.filter((u) => selected.size === 0 || selected.has(u.id))
+    const ok = exportToCsv('investors', rows, [
+      { key: 'firstName', label: 'Prénom' },
+      { key: 'lastName', label: 'Nom' },
+      { key: 'email', label: 'Email' },
+      { key: 'phone', label: 'Téléphone' },
+      { key: 'kycStatus', label: 'KYC' },
+      { key: 'accountStatus', label: 'Statut' },
+      { key: 'createdAt', label: 'Inscrit le', format: (v) => v ? new Date(v).toLocaleDateString('fr-FR') : '' },
+    ])
+    if (ok) toast.success(`${rows.length} ligne(s) exportées`)
+    else toast.error('Aucune donnée à exporter')
+  }
+
+  const bulkApproveKyc = async () => {
+    const ids = Array.from(selected)
+    await Promise.allSettled(ids.map((id) => investorsService.approveKyc(id)))
+    toast.success(`KYC approuvée pour ${ids.length} investisseur(s)`)
+    clearSelection()
+    load()
+  }
+  const bulkSuspend = async () => {
+    const ids = Array.from(selected)
+    await Promise.allSettled(ids.map((id) => investorsService.suspend(id)))
+    toast.success(`${ids.length} compte(s) suspendu(s)`)
+    clearSelection()
+    load()
+  }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
-      <div style={{ padding: '24px 28px 16px', display: 'flex', gap: 12, alignItems: 'center' }}>
+      <div style={{ padding: '24px 28px 16px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <SearchBar value={search} onChange={setSearch} placeholder="Rechercher..." />
         <FilterTabs options={STATUS_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
+        <button className="btn btn-sm" onClick={exportCsv} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Download size={14} /> CSV
+        </button>
       </div>
 
       {loading ? <Loading /> : error ? <EmptyState title={error} /> : (
@@ -67,6 +120,13 @@ export default function Investors() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text3)' }}>
+                <th style={{ width: 32, padding: '10px 8px' }}>
+                  <input
+                    type="checkbox"
+                    checked={selected.size === investors.length && investors.length > 0}
+                    onChange={toggleAll}
+                  />
+                </th>
                 <th style={{ textAlign: 'left', padding: '10px 8px' }}>Nom</th>
                 <th style={{ textAlign: 'left', padding: '10px 8px' }}>Email</th>
                 <th style={{ textAlign: 'left', padding: '10px 8px' }}>KYC</th>
@@ -76,7 +136,10 @@ export default function Investors() {
             </thead>
             <tbody>
               {investors.map((u) => (
-                <tr key={u.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                <tr key={u.id} style={{ borderBottom: '1px solid var(--border)', background: selected.has(u.id) ? 'rgba(43,95,245,0.04)' : 'transparent' }}>
+                  <td style={{ padding: '12px 8px' }}>
+                    <input type="checkbox" checked={selected.has(u.id)} onChange={() => toggleSelect(u.id)} />
+                  </td>
                   <td style={{ padding: '12px 8px', fontWeight: 600 }}>{formatName(u)}</td>
                   <td style={{ padding: '12px 8px' }}>{u.email}</td>
                   <td style={{ padding: '12px 8px' }}><StatusBadge status={u.kycStatus} /></td>
@@ -97,6 +160,16 @@ export default function Investors() {
           {investors.length === 0 && <EmptyState title="Aucun investisseur" />}
         </div>
       )}
+
+      <BulkActionsBar
+        count={selected.size}
+        onClear={clearSelection}
+        actions={[
+          { label: 'Exporter CSV', icon: <Download size={14} />, onClick: exportCsv },
+          { label: 'Approuver KYC', icon: <Check size={14} />, color: '#10B981', onClick: bulkApproveKyc },
+          { label: 'Suspendre', icon: <Pause size={14} />, danger: true, onClick: bulkSuspend },
+        ]}
+      />
 
     </div>
   )
