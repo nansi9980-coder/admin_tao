@@ -37,6 +37,11 @@ export default function Login({ onLogin }) {
         if (data.requires2fa) {
           setTempToken(data.tempToken)
           setError('')
+        } else if (data.requires2faSetup) {
+          setError(
+            'Votre compte requiert la configuration du 2FA avant la première connexion. ' +
+              'Demandez au Super Admin de désactiver cette exigence ou utilisez une session déjà configurée.',
+          )
         } else {
           finishLogin(data)
         }
