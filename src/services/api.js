@@ -142,6 +142,21 @@ export const serviceRequestsService = {
   delete: (id) => api.delete(`admin/service-requests/${id}`),
 }
 
+export const cmsService = {
+  listSections: () => api.get('admin/cms/sections'),
+  listAll: (section) => api.get(`admin/cms/blocks${section ? `?section=${encodeURIComponent(section)}` : ''}`),
+  create: (data) => api.post('admin/cms/blocks', data),
+  update: (id, data) => api.patch(`admin/cms/blocks/${id}`, data),
+  remove: (id) => api.delete(`admin/cms/blocks/${id}`),
+  reorder: (items) => api.post('admin/cms/reorder', { items }),
+  uploadImage: (id, file) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return uploadMultipart(`admin/cms/blocks/${id}/image`, fd)
+  },
+  seedDefaults: () => api.post('admin/cms/seed-defaults'),
+}
+
 export const adminUsersService = {
   getAll: () => api.get('admin/admin-users'),
   create: (data) => api.post('admin/admin-users', data),

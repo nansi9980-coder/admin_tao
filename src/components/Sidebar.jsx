@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import {
   LayoutDashboard, Users, ArrowLeftRight, FileText, Wallet,
   Settings, LogOut, TrendingUp, Shield, Image, ClipboardList, Briefcase,
-  ChevronsLeft, ChevronsRight, UserCog,
+  ChevronsLeft, ChevronsRight, UserCog, FileEdit,
 } from 'lucide-react'
 import logoPng from '../assets/logo.png'
 import { hasPerm } from '../utils/permissions'
@@ -20,6 +20,7 @@ const NAV = [
   { to: '/finance', label: 'Finances', icon: Wallet, badge: 'finance', perm: 'finance.view' },
   { to: '/audit', label: 'Conformité', icon: Shield, perm: 'audit.view' },
   { to: '/admin-users', label: 'Administrateurs', icon: UserCog, perm: 'admins.manage' },
+  { to: '/cms', label: 'Contenus app', icon: FileEdit, perm: 'cms.view' },
   { to: '/settings', label: 'Paramètres', icon: Settings, perm: 'settings.view' },
 ]
 

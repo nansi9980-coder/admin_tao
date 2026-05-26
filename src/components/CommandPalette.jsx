@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import {
   LayoutDashboard, Users, ArrowLeftRight, FileText, Wallet,
-  TrendingUp, Image, ClipboardList, Briefcase, Shield, Settings, UserCog,
+  TrendingUp, Image, ClipboardList, Briefcase, Shield, Settings, UserCog, FileEdit,
 } from 'lucide-react'
 
 const ITEMS = [
@@ -19,6 +19,7 @@ const ITEMS = [
   { label: 'Finances', to: '/finance', icon: Wallet, perm: 'finance.view' },
   { label: 'Conformité / Audit', to: '/audit', icon: Shield, perm: 'audit.view' },
   { label: 'Administrateurs', to: '/admin-users', icon: UserCog, perm: 'admins.manage' },
+  { label: 'Contenus app (CMS)', to: '/cms', icon: FileEdit, perm: 'cms.view' },
   { label: 'Paramètres', to: '/settings', icon: Settings, perm: 'settings.view' },
 ]
 

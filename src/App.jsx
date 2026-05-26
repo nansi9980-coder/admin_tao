@@ -20,6 +20,7 @@ import ServiceSectors from './pages/ServiceSectors'
 import InvestorDetail from './pages/InvestorDetail'
 import Settings from './pages/Settings'
 import AdminUsers from './pages/AdminUsers'
+import Cms from './pages/Cms'
 import { documentsService, financeService, serviceRequestsService } from './services/api'
 import toast, { Toaster } from 'react-hot-toast'
 import { useRealtimeSync } from './hooks/useRealtimeSync'
@@ -192,6 +193,7 @@ function AnimatedRoutes({ role }) {
             <Route path="/finance" element={<Guard perm="finance.view" role={role}><Finance /></Guard>} />
             <Route path="/audit" element={<Guard perm="audit.view" role={role}><AuditLogs /></Guard>} />
             <Route path="/admin-users" element={<Guard perm="admins.manage" role={role}><AdminUsers /></Guard>} />
+            <Route path="/cms" element={<Guard perm="cms.view" role={role}><Cms role={role} /></Guard>} />
             <Route path="/settings" element={<Guard perm="settings.view" role={role}><Settings /></Guard>} />
           </Route>
           <Route path="*" element={<Navigate to="/" />} />
