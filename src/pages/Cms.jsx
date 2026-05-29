@@ -16,6 +16,7 @@ const SECTION_LABELS = {
   faq: 'FAQ globale',
   kyc: 'KYC',
   legal: 'Mentions légales',
+  settings: 'Paramètres généraux',
 }
 
 const TYPE_LABELS = {
@@ -444,9 +445,12 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
     <motion.div
       initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
       style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)',
+        position: 'fixed', inset: 0,
+        background: 'rgba(8, 15, 31, 0.78)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        zIndex: 100, padding: 20,
+        zIndex: 1000, padding: 20,
       }}
       onClick={onClose}
     >
@@ -454,75 +458,146 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
         initial={{ y: 24, scale: 0.97 }} animate={{ y: 0, scale: 1 }} exit={{ y: 24, scale: 0.97 }}
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: 'var(--card)', borderRadius: 14, maxWidth: 720, width: '100%',
-          maxHeight: '88vh', overflow: 'auto', padding: 20, boxShadow: '0 20px 60px rgba(0,0,0,0.35)',
+          background: '#ffffff',
+          color: '#0F1E3D',
+          borderRadius: 16,
+          maxWidth: 720,
+          width: '100%',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 30px 80px rgba(0,0,0,0.45), 0 4px 16px rgba(0,0,0,0.25)',
+          border: '1px solid rgba(30,91,184,0.12)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
-          <h2 style={{ margin: 0, fontSize: 18 }}>{block ? 'Modifier le bloc' : 'Nouveau bloc'}</h2>
-          <button onClick={onClose} className="btn btn-ghost">×</button>
-        </div>
-
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <Field label="Section" disabled={!!block}>
-            <input value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} disabled={!!block} />
-          </Field>
-          <Field label="Clé unique" disabled={!!block}>
-            <input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} disabled={!!block} />
-          </Field>
-          <Field label="Label (affiché à l’admin)">
-            <input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
-          </Field>
-          <Field label="Type">
-            <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })}>
-              {Object.entries(TYPE_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>{v}</option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Parent key (optionnel)">
-            <input value={form.parentKey} onChange={(e) => setForm({ ...form, parentKey: e.target.value })} placeholder="ex: services_hub.faq.list" />
-          </Field>
-          <Field label="Ordre">
-            <input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} />
-          </Field>
-        </div>
-
-        <Field label="Valeur (texte affiché)">
-          <textarea
-            rows={form.type === 'SHORT_TEXT' ? 2 : 6}
-            value={form.value}
-            onChange={(e) => setForm({ ...form, value: e.target.value })}
-          />
-        </Field>
-
-        <Field label="Métadonnées (JSON, optionnel) — ex: {&quot;icon&quot;:&quot;bolt&quot;,&quot;question&quot;:&quot;...&quot;}">
-          <textarea
-            rows={4}
-            value={form.metadata}
-            onChange={(e) => setForm({ ...form, metadata: e.target.value })}
-            placeholder='{"icon":"bolt","title":"Réactivité"}'
-            style={{ fontFamily: 'monospace', fontSize: 12 }}
-          />
-        </Field>
-
-        <label style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: 8 }}>
-          <input type="checkbox" checked={form.active} onChange={(e) => setForm({ ...form, active: e.target.checked })} />
-          Bloc actif (visible dans l’application)
-        </label>
-
-        {block && (
-          <div style={{ marginTop: 14, padding: 12, border: '1px dashed var(--border)', borderRadius: 10 }}>
-            <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>Image illustrative</div>
-            {block.imageUrl && <img src={block.imageUrl} alt="" style={{ maxWidth: 220, borderRadius: 8, marginBottom: 8 }} />}
-            <input ref={fileRef} type="file" accept="image/*" onChange={pickImage} disabled={uploading || !canEdit} />
-            {uploading && <span style={{ marginLeft: 8 }}>Envoi…</span>}
+        {/* Header collant */}
+        <div style={{
+          padding: '16px 22px',
+          background: 'linear-gradient(180deg, #ffffff 0%, #FAF7F2 100%)',
+          borderBottom: '1px solid rgba(30,91,184,0.10)',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          flexShrink: 0,
+        }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: '#0F1E3D' }}>
+              {block ? 'Modifier le bloc' : 'Nouveau bloc'}
+            </h2>
+            {block && (
+              <div style={{ fontSize: 12, color: '#7A9CC9', marginTop: 2, fontFamily: 'monospace' }}>
+                {block.key}
+              </div>
+            )}
           </div>
-        )}
+          <button
+            onClick={onClose}
+            aria-label="Fermer"
+            style={{
+              background: 'rgba(15,30,61,0.06)',
+              border: 'none',
+              width: 32, height: 32, borderRadius: 16,
+              cursor: 'pointer', color: '#0F1E3D', fontSize: 18, lineHeight: 1,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >×</button>
+        </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 18 }}>
-          <button onClick={onClose} className="btn btn-ghost">Annuler</button>
-          <button onClick={submit} className="btn btn-primary" disabled={saving || !canEdit}>
+        {/* Body scrollable */}
+        <div style={{ padding: 22, overflow: 'auto', flex: 1, background: '#ffffff' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <Field label="Section" disabled={!!block}>
+              <input value={form.section} onChange={(e) => setForm({ ...form, section: e.target.value })} disabled={!!block} style={inputStyle(!!block)} />
+            </Field>
+            <Field label="Clé unique" disabled={!!block}>
+              <input value={form.key} onChange={(e) => setForm({ ...form, key: e.target.value })} disabled={!!block} style={inputStyle(!!block)} />
+            </Field>
+            <Field label="Label (affiché à l'admin)">
+              <input value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} style={inputStyle(false)} />
+            </Field>
+            <Field label="Type">
+              <select value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value })} style={inputStyle(false)}>
+                {Object.entries(TYPE_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>{v}</option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Parent key (optionnel)">
+              <input value={form.parentKey} onChange={(e) => setForm({ ...form, parentKey: e.target.value })} placeholder="ex: services_hub.faq.list" style={inputStyle(false)} />
+            </Field>
+            <Field label="Ordre">
+              <input type="number" value={form.order} onChange={(e) => setForm({ ...form, order: e.target.value })} style={inputStyle(false)} />
+            </Field>
+          </div>
+
+          <Field label="Valeur (texte affiché)">
+            <textarea
+              rows={form.type === 'SHORT_TEXT' ? 2 : 6}
+              value={form.value}
+              onChange={(e) => setForm({ ...form, value: e.target.value })}
+              style={{ ...inputStyle(false), resize: 'vertical', minHeight: 60, lineHeight: 1.5 }}
+            />
+          </Field>
+
+          <Field label='Métadonnées (JSON, optionnel) — ex: {"icon":"bolt","question":"..."}'>
+            <textarea
+              rows={4}
+              value={form.metadata}
+              onChange={(e) => setForm({ ...form, metadata: e.target.value })}
+              placeholder='{"icon":"bolt","title":"Réactivité"}'
+              style={{ ...inputStyle(false), fontFamily: 'ui-monospace, monospace', fontSize: 12, lineHeight: 1.5, minHeight: 80 }}
+            />
+          </Field>
+
+          <label style={{
+            display: 'flex', gap: 10, alignItems: 'center', marginTop: 14,
+            padding: '10px 12px',
+            background: 'rgba(30,91,184,0.04)',
+            border: '1px solid rgba(30,91,184,0.10)',
+            borderRadius: 10,
+            cursor: 'pointer',
+            color: '#0F1E3D',
+            fontSize: 14, fontWeight: 500,
+          }}>
+            <input
+              type="checkbox"
+              checked={form.active}
+              onChange={(e) => setForm({ ...form, active: e.target.checked })}
+              style={{ width: 18, height: 18, cursor: 'pointer' }}
+            />
+            Bloc actif (visible dans l'application)
+          </label>
+
+          {block && (
+            <div style={{
+              marginTop: 16, padding: 14,
+              background: '#FAF7F2',
+              border: '1px solid rgba(30,91,184,0.10)',
+              borderRadius: 12,
+            }}>
+              <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 8, color: '#0F1E3D' }}>Image illustrative (optionnel)</div>
+              {block.imageUrl && (
+                <img
+                  src={block.imageUrl}
+                  alt=""
+                  style={{ maxWidth: 240, borderRadius: 10, marginBottom: 10, display: 'block', border: '1px solid rgba(0,0,0,0.06)' }}
+                />
+              )}
+              <input ref={fileRef} type="file" accept="image/*" onChange={pickImage} disabled={uploading || !canEdit} />
+              {uploading && <span style={{ marginLeft: 8, color: '#1E5BB8' }}>Envoi en cours…</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Footer collant */}
+        <div style={{
+          padding: '14px 22px',
+          background: '#FAF7F2',
+          borderTop: '1px solid rgba(30,91,184,0.10)',
+          display: 'flex', justifyContent: 'flex-end', gap: 10,
+          flexShrink: 0,
+        }}>
+          <button onClick={onClose} style={btnSecondaryStyle}>Annuler</button>
+          <button onClick={submit} style={btnPrimaryStyle(saving || !canEdit)} disabled={saving || !canEdit}>
             {saving ? 'Enregistrement…' : 'Enregistrer'}
           </button>
         </div>
@@ -531,10 +606,49 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
   )
 }
 
+const inputStyle = (disabled) => ({
+  width: '100%',
+  padding: '9px 12px',
+  border: '1px solid rgba(30,91,184,0.18)',
+  borderRadius: 8,
+  fontSize: 14,
+  background: disabled ? 'rgba(15,30,61,0.04)' : '#ffffff',
+  color: '#0F1E3D',
+  outline: 'none',
+  fontFamily: 'inherit',
+  boxSizing: 'border-box',
+})
+
+const btnSecondaryStyle = {
+  padding: '9px 18px',
+  border: '1px solid rgba(30,91,184,0.20)',
+  borderRadius: 8,
+  background: '#ffffff',
+  color: '#0F1E3D',
+  fontWeight: 600,
+  cursor: 'pointer',
+  fontSize: 14,
+}
+
+const btnPrimaryStyle = (disabled) => ({
+  padding: '9px 22px',
+  border: 'none',
+  borderRadius: 8,
+  background: disabled ? '#cbd5e1' : 'linear-gradient(180deg, #E89B3C 0%, #C97B1F 100%)',
+  color: '#ffffff',
+  fontWeight: 700,
+  cursor: disabled ? 'not-allowed' : 'pointer',
+  fontSize: 14,
+  boxShadow: disabled ? 'none' : '0 6px 14px rgba(232,155,60,0.35)',
+})
+
 function Field({ label, disabled, children }) {
   return (
-    <label style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, opacity: disabled ? 0.7 : 1 }}>
-      <span style={{ fontSize: 12, color: 'var(--muted)' }}>{label}</span>
+    <label style={{
+      display: 'flex', flexDirection: 'column', gap: 6, marginTop: 12,
+      opacity: disabled ? 0.7 : 1,
+    }}>
+      <span style={{ fontSize: 12, color: '#3D5A99', fontWeight: 600, letterSpacing: 0.2 }}>{label}</span>
       {children}
     </label>
   )

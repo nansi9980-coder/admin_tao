@@ -59,10 +59,11 @@ export default function Finance() {
     <div style={{ padding: '24px 28px 40px' }}>
       {pending.length > 0 && (
         <div className="card" style={{ padding: 20, marginBottom: 24, border: '1.5px solid #E89B3C' }}>
-          <h3 style={{ marginBottom: 12 }}>Dépôts en attente ({pending.length})</h3>
+          <h3 style={{ marginBottom: 12 }}>Transactions en attente ({pending.length})</h3>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
               <tr style={{ borderBottom: '1.5px solid var(--border)', color: 'var(--text3)' }}>
+                <th style={{ textAlign: 'left', padding: 10 }}>Type</th>
                 <th style={{ textAlign: 'left', padding: 10 }}>Utilisateur</th>
                 <th style={{ textAlign: 'left', padding: 10 }}>Réf.</th>
                 <th style={{ textAlign: 'right', padding: 10 }}>Montant</th>
@@ -72,6 +73,7 @@ export default function Finance() {
             <tbody>
               {pending.map((t) => (
                 <tr key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: 12 }}>{t.type}</td>
                   <td style={{ padding: 12 }}>{t.userEmail || t.userId}</td>
                   <td style={{ padding: 12 }}>{t.providerRef || '—'}</td>
                   <td style={{ padding: 12, textAlign: 'right' }}>{formatXof(t.amountXof)}</td>
@@ -123,7 +125,7 @@ export default function Finance() {
               <td style={{ padding: 12, textAlign: 'right' }}>{formatXof(t.amountXof)}</td>
               <td style={{ padding: 12 }}>{t.status}</td>
               <td style={{ padding: 12, textAlign: 'right' }}>
-                {t.status === 'PENDING' && t.type === 'DEPOSIT' && (
+                {t.status === 'PENDING' && (t.type === 'DEPOSIT' || t.type === 'WITHDRAWAL') && (
                   <>
                     <button className="btn btn-sm btn-primary" onClick={() => confirmTx(t.id)}>Confirmer</button>
                     <button className="btn btn-sm" style={{ marginLeft: 6 }} onClick={() => rejectTx(t.id)}>Rejeter</button>
