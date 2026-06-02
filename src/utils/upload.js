@@ -8,7 +8,6 @@ export async function uploadMultipart(path, formData) {
   const res = await axios.post(`${BASE_URL}${path.replace(/^\//, '')}`, formData, {
     headers: {
       Authorization: token ? `Bearer ${token}` : undefined,
-      'Content-Type': 'multipart/form-data',
     },
     timeout: 120000,
   })

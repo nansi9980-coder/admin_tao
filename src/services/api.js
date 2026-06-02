@@ -39,6 +39,8 @@ api.interceptors.response.use(
 export const authService = {
   adminLogin: (email, password) => api.post('admin/auth/login', { email, password }),
   verify2fa: (tempToken, code) => api.post('admin/auth/2fa/verify', { tempToken, code }),
+  resetPassword: (email) => api.post('admin/auth/password-reset/request', { email }),
+  confirmPasswordReset: (token, password) => api.post('admin/auth/password-reset/confirm', { token, password }),
 }
 
 export const dashboardService = {
@@ -116,6 +118,15 @@ export const mediaService = {
     return uploadMultipart('admin/mediatek/upload', fd)
   },
   delete: (id) => api.delete(`admin/mediatek/${id}`),
+}
+
+export const driversService = {
+  getAll: (params = {}) => api.get(`admin/drivers?${new URLSearchParams(params)}`),
+  getOne: (id) => api.get(`admin/drivers/${id}`),
+  approve: (id) => api.patch(`admin/drivers/${id}/approve`),
+  reject: (id, reason) => api.patch(`admin/drivers/${id}/reject`, { reason }),
+  suspend: (id) => api.patch(`admin/drivers/${id}/suspend`),
+  activate: (id) => api.patch(`admin/drivers/${id}/activate`),
 }
 
 export const auditService = {
