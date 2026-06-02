@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { plansService, mediaService } from '../services/api'
 import { Loading, EmptyState, StatusBadge } from '../components/UI'
+import MediaPicker from '../components/MediaPicker'
 
 const formatXof = (v) => v ? new Intl.NumberFormat('fr-FR').format(Number(v) / 100) + ' FCFA' : '—'
 const toCentimes = (fcfa) => String(Math.round(Number(fcfa) * 100))
@@ -199,24 +200,20 @@ export default function Plans() {
               <button type="button" className="btn btn-sm" style={{ marginTop: 8 }} onClick={() => fileRef.current?.click()}>
                 Choisir une image depuis l&apos;appareil
               </button>
-              <select
-                className="input"
-                style={{ width: '100%', marginTop: 8 }}
-                value={selectedMediaUrl}
-                onChange={(e) => {
-                  setSelectedMediaUrl(e.target.value)
-                  if (e.target.value) {
-                    setHeroPreview(e.target.value)
-                    setHeroFile(null)
-                    if (fileRef.current) fileRef.current.value = ''
-                  }
-                }}
-              >
-                <option value="">Ou choisir depuis la médiathèque</option>
-                {media.filter((m) => m.mediaType === 'IMAGE').map((m) => (
-                  <option key={m.id} value={m.url}>{m.folder || 'media'} · {m.url.slice(0, 60)}...</option>
-                ))}
-              </select>
+              <div style={{ marginTop: 8 }}>
+                <MediaPicker
+                  items={media}
+                  value={selectedMediaUrl}
+                  onChange={(url) => {
+                    setSelectedMediaUrl(url)
+                    if (url) {
+                      setHeroPreview(url)
+                      setHeroFile(null)
+                      if (fileRef.current) fileRef.current.value = ''
+                    }
+                  }}
+                />
+              </div>
             </div>
 
             <label style={{ display: 'block', marginBottom: 12 }}>

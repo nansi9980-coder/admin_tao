@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { mediaService, serviceSectorsService, publicServiceSectorsPreview } from '../services/api'
 import { Loading, EmptyState } from '../components/UI'
+import MediaPicker from '../components/MediaPicker'
 
 const EMPTY_SECTOR = {
   slug: '',
@@ -24,6 +25,7 @@ export default function ServiceSectors() {
   const fileRef = useRef(null)
   const [uploadSectorId, setUploadSectorId] = useState(null)
   const [media, setMedia] = useState([])
+  const [pickingMediaForSectorId, setPickingMediaForSectorId] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -201,22 +203,13 @@ export default function ServiceSectors() {
                       >
                         Image
                       </button>
-                      <select
-                        className="input"
-                        style={{ minWidth: 190 }}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            applyMediaImage(s.id, e.target.value)
-                            e.target.value = ''
-                          }
-                        }}
-                        defaultValue=""
+                      <button
+                        type="button"
+                        className="btn btn-sm btn-ghost"
+                        onClick={() => setPickingMediaForSectorId(s.id)}
                       >
-                        <option value="">MediaTech</option>
-                        {media.filter((m) => m.mediaType === 'IMAGE').map((m) => (
-                          <option key={m.id} value={m.url}>{(m.folder || 'media').slice(-20)} · {m.url.slice(0, 28)}...</option>
-                        ))}
-                      </select>
+                        Médiathèque
+                      </button>
                       <button className="btn btn-sm btn-primary" onClick={() => setExpanded(expanded === s.id ? null : s.id)}>
                         Offres ({s.offers?.length || 0})
                       </button>
@@ -301,6 +294,37 @@ export default function ServiceSectors() {
           )}
         </div>
       </div>
+
+      {pickingMediaForSectorId && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 110,
+          }}
+          onClick={() => setPickingMediaForSectorId(null)}
+        >
+          <div
+            className="card"
+            style={{ padding: 20, width: '92%', maxWidth: 560, maxHeight: '85vh', overflow: 'auto' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 style={{ marginTop: 0 }}>Choisir une image</h3>
+            <MediaPicker
+              items={media}
+              value=""
+              onChange={(url) => {
+                if (url) {
+                  applyMediaImage(pickingMediaForSectorId, url)
+                  setPickingMediaForSectorId(null)
+                }
+              }}
+            />
+            <button type="button" className="btn btn-ghost" style={{ marginTop: 12 }} onClick={() => setPickingMediaForSectorId(null)}>
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
 
       {editSector && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100 }} onClick={() => setEditSector(null)}>

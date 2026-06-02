@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { bannersService, mediaService } from '../services/api'
 import { Loading, EmptyState } from '../components/UI'
+import MediaPicker from '../components/MediaPicker'
 
 const MAX_VIDEO_MB = 50
 const ACCEPT = 'image/*,video/mp4,video/webm'
@@ -230,24 +231,19 @@ export default function Banners() {
         <button type="button" className="btn btn-sm" onClick={() => fileRef.current?.click()}>
           {editing ? 'Remplacer le média' : 'Choisir un média (image ou vidéo)'}
         </button>
-        <select
-          className="input"
+        <MediaPicker
+          items={media}
           value={selectedMediaUrl}
-          onChange={(e) => {
-            setSelectedMediaUrl(e.target.value)
-            if (e.target.value) {
-              setPreview(e.target.value)
+          onChange={(url) => {
+            setSelectedMediaUrl(url)
+            if (url) {
+              setPreview(url)
               setIsVideo(false)
               setFile(null)
               if (fileRef.current) fileRef.current.value = ''
             }
           }}
-        >
-          <option value="">Ou choisir depuis la médiathèque</option>
-          {media.filter((m) => m.mediaType === 'IMAGE').map((m) => (
-            <option key={m.id} value={m.url}>{m.folder || 'media'} · {m.url.slice(0, 60)}...</option>
-          ))}
-        </select>
+        />
         {file && <span style={{ fontSize: 12, color: 'var(--text2)' }}>{file.name} {isVideo && '· VIDÉO'}</span>}
 
         <div style={{ display: 'flex', gap: 10 }}>
