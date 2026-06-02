@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { mediaService, serviceSectorsService, publicServiceSectorsPreview } from '../services/api'
 import { Loading, EmptyState } from '../components/UI'
 import MediaPicker from '../components/MediaPicker'
+import { compressImageForUpload, formatFileSize } from '../utils/compressImage'
 
 const EMPTY_SECTOR = {
   slug: '',
@@ -135,13 +136,29 @@ export default function ServiceSectors() {
   }
 
   const onHeroFile = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file || !uploadSectorId) return
-    await serviceSectorsService.uploadHero(uploadSectorId, file)
-    setUploadSectorId(null)
-    if (fileRef.current) fileRef.current.value = ''
-    load()
-    loadPreview()
+    const raw = e.target.files?.[0]
+    if (!raw || !uploadSectorId) return
+    const sectorId = uploadSectorId
+    try {
+      const file = await compressImageForUpload(raw)
+      if (file.size !== raw.size) {
+        console.info(
+          `[hero] ${formatFileSize(raw.size)} → ${formatFileSize(file.size)}`,
+        )
+      }
+      await serviceSectorsService.uploadHero(sectorId, file)
+      load()
+      loadPreview()
+    } catch (err) {
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        'Échec de l\'envoi de l\'image'
+      alert(msg)
+    } finally {
+      setUploadSectorId(null)
+      if (fileRef.current) fileRef.current.value = ''
+    }
   }
 
   const applyMediaImage = async (sectorId, imageUrl) => {

@@ -2,6 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react'
 import { plansService, mediaService } from '../services/api'
 import { Loading, EmptyState, StatusBadge } from '../components/UI'
 import MediaPicker from '../components/MediaPicker'
+import { compressImageForUpload } from '../utils/compressImage'
 
 const formatXof = (v) => v ? new Intl.NumberFormat('fr-FR').format(Number(v) / 100) + ' FCFA' : '—'
 const toCentimes = (fcfa) => String(Math.round(Number(fcfa) * 100))
@@ -107,7 +108,10 @@ export default function Plans() {
       if (modal.mode === 'create') {
         const created = await plansService.create(payloadFromForm())
         if (created?.id) {
-          if (heroFile) await plansService.uploadHero(created.id, heroFile)
+          if (heroFile) {
+            const compressed = await compressImageForUpload(heroFile)
+            await plansService.uploadHero(created.id, compressed)
+          }
           if (!heroFile && selectedMediaUrl) {
             await plansService.update(created.id, { heroImageUrl: selectedMediaUrl })
           }
@@ -115,7 +119,8 @@ export default function Plans() {
       } else if (modal.plan?.id) {
         await plansService.update(modal.plan.id, payloadFromForm())
         if (heroFile) {
-          await plansService.uploadHero(modal.plan.id, heroFile)
+          const compressed = await compressImageForUpload(heroFile)
+          await plansService.uploadHero(modal.plan.id, compressed)
         } else if (selectedMediaUrl) {
           await plansService.update(modal.plan.id, { heroImageUrl: selectedMediaUrl })
         }
