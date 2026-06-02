@@ -384,6 +384,7 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
     order: block?.order ?? 0,
     active: block?.active ?? true,
     metadata: block?.metadata ? JSON.stringify(block.metadata, null, 2) : '',
+    imageUrl: block?.imageUrl || '',
   }))
   const [saving, setSaving] = useState(false)
   const fileRef = useRef(null)
@@ -412,6 +413,7 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
           order: Number(form.order) || 0,
           active: form.active,
           metadata: parsedMeta ?? null,
+          imageUrl: form.imageUrl || null,
         }
       : {
           section: form.section,
@@ -424,6 +426,7 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
           order: Number(form.order) || 0,
           active: form.active,
           metadata: parsedMeta,
+          imageUrl: form.imageUrl || undefined,
         }
     await onSave(payload)
     setSaving(false)
@@ -558,6 +561,15 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
               onChange={(e) => setForm({ ...form, metadata: e.target.value })}
               placeholder='{"icon":"bolt","title":"Réactivité"}'
               style={{ ...inputStyle(false), fontFamily: 'ui-monospace, monospace', fontSize: 12, lineHeight: 1.5, minHeight: 80 }}
+            />
+          </Field>
+
+          <Field label="URL image (optionnel, ex depuis Mediatheque)">
+            <input
+              value={form.imageUrl}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              placeholder="https://..."
+              style={inputStyle(false)}
             />
           </Field>
 

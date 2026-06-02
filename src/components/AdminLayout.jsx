@@ -46,6 +46,10 @@ const PAGE_META = {
     title: 'Paramètres',
     subtitle: 'Configuration TAOMAN Admin',
   },
+  '/mediatek': {
+    title: 'Mediatheque',
+    subtitle: 'Bibliotheque de medias reutilisables',
+  },
 }
 
 function resolveMeta(pathname) {

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { serviceSectorsService, publicServiceSectorsPreview } from '../services/api'
+import { mediaService, serviceSectorsService, publicServiceSectorsPreview } from '../services/api'
 import { Loading, EmptyState } from '../components/UI'
 
 const EMPTY_SECTOR = {
@@ -23,14 +23,20 @@ export default function ServiceSectors() {
   const [editOffer, setEditOffer] = useState(null)
   const fileRef = useRef(null)
   const [uploadSectorId, setUploadSectorId] = useState(null)
+  const [media, setMedia] = useState([])
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await serviceSectorsService.getAll()
+      const [res, med] = await Promise.all([
+        serviceSectorsService.getAll(),
+        mediaService.getAll().catch(() => []),
+      ])
       setSectors(Array.isArray(res) ? res : [])
+      setMedia(Array.isArray(med) ? med : [])
     } catch {
       setSectors([])
+      setMedia([])
     }
     setLoading(false)
   }, [])
@@ -136,6 +142,13 @@ export default function ServiceSectors() {
     loadPreview()
   }
 
+  const applyMediaImage = async (sectorId, imageUrl) => {
+    if (!sectorId || !imageUrl) return
+    await serviceSectorsService.update(sectorId, { heroImageUrl: imageUrl })
+    load()
+    loadPreview()
+  }
+
   return (
     <div style={{ padding: '24px 28px 40px' }}>
       <input ref={fileRef} type="file" accept="image/*" hidden onChange={onHeroFile} />
@@ -188,6 +201,22 @@ export default function ServiceSectors() {
                       >
                         Image
                       </button>
+                      <select
+                        className="input"
+                        style={{ minWidth: 190 }}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            applyMediaImage(s.id, e.target.value)
+                            e.target.value = ''
+                          }
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="">MediaTech</option>
+                        {media.filter((m) => m.mediaType === 'IMAGE').map((m) => (
+                          <option key={m.id} value={m.url}>{(m.folder || 'media').slice(-20)} · {m.url.slice(0, 28)}...</option>
+                        ))}
+                      </select>
                       <button className="btn btn-sm btn-primary" onClick={() => setExpanded(expanded === s.id ? null : s.id)}>
                         Offres ({s.offers?.length || 0})
                       </button>

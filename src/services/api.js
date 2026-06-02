@@ -106,6 +106,18 @@ export const bannersService = {
   delete: (id) => api.delete(`admin/banners/${id}`),
 }
 
+export const mediaService = {
+  getAll: () => api.get('admin/mediatek'),
+  upload: (file, { folder = 'taoman/mediatek', tags = '' } = {}) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    if (folder) fd.append('folder', folder)
+    if (tags) fd.append('tags', tags)
+    return uploadMultipart('admin/mediatek/upload', fd)
+  },
+  delete: (id) => api.delete(`admin/mediatek/${id}`),
+}
+
 export const auditService = {
   getAll: (params = {}) => api.get(`admin/audit-logs?${new URLSearchParams(params)}`),
 }

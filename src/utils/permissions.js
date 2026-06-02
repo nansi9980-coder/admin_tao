@@ -18,6 +18,7 @@ export const ROLE_PERMISSIONS = {
     'plans.view', 'plans.write',
     'sectors.view', 'sectors.write',
     'cms.view', 'cms.write',
+    'media.view', 'media.write',
   ],
   FINANCE: [
     'dashboard.view',
@@ -41,6 +42,7 @@ export const ROLE_PERMISSIONS = {
     'audit.view',
     'service-requests.view',
     'cms.view',
+    'media.view',
   ],
 }
 

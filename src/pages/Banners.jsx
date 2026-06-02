@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { bannersService } from '../services/api'
+import { bannersService, mediaService } from '../services/api'
 import { Loading, EmptyState } from '../components/UI'
 
 const MAX_VIDEO_MB = 50
@@ -48,6 +48,8 @@ export default function Banners() {
   const [preview, setPreview] = useState(null)
   const [isVideo, setIsVideo] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [media, setMedia] = useState([])
+  const [selectedMediaUrl, setSelectedMediaUrl] = useState('')
   const fileRef = useRef(null)
 
   const activeBanners = banners.filter((b) => b.active !== false)
@@ -57,8 +59,11 @@ export default function Banners() {
     try {
       const res = await bannersService.getAll()
       setBanners(Array.isArray(res) ? res : [])
+      const med = await mediaService.getAll()
+      setMedia(Array.isArray(med) ? med : [])
     } catch {
       setBanners([])
+      setMedia([])
     }
     setLoading(false)
   }, [])
@@ -70,6 +75,7 @@ export default function Banners() {
     setFile(null)
     setPreview(null)
     setIsVideo(false)
+    setSelectedMediaUrl('')
     setEditing(null)
     if (fileRef.current) fileRef.current.value = ''
   }
@@ -88,6 +94,7 @@ export default function Banners() {
     setPreview(b.thumbnailUrl || b.imageUrl || null)
     setIsVideo(b.mediaType === 'VIDEO')
     setFile(null)
+    setSelectedMediaUrl('')
   }
 
   const onPickFile = async (e) => {
@@ -126,21 +133,43 @@ export default function Banners() {
           active: form.active,
         })
         if (file) await bannersService.uploadImage(editing.id, file)
+        if (!file && selectedMediaUrl) {
+          await bannersService.update(editing.id, {
+            imageUrl: selectedMediaUrl,
+            mediaType: 'IMAGE',
+            videoUrl: null,
+            thumbnailUrl: null,
+          })
+        }
       } else {
-        if (!file) {
-          alert('Choisissez une image ou une vidéo')
+        if (!file && !selectedMediaUrl) {
+          alert('Choisissez un média')
           setSaving(false)
           return
         }
-        await bannersService.createWithFile(file, {
-          title: form.title,
-          titleEn: form.titleEn,
-          caption: form.caption,
-          captionEn: form.captionEn,
-          linkUrl: form.linkUrl,
-          order: form.order,
-          active: form.active,
-        })
+        if (file) {
+          await bannersService.createWithFile(file, {
+            title: form.title,
+            titleEn: form.titleEn,
+            caption: form.caption,
+            captionEn: form.captionEn,
+            linkUrl: form.linkUrl,
+            order: form.order,
+            active: form.active,
+          })
+        } else {
+          await bannersService.create({
+            imageUrl: selectedMediaUrl,
+            mediaType: 'IMAGE',
+            title: form.title,
+            titleEn: form.titleEn,
+            caption: form.caption,
+            captionEn: form.captionEn,
+            linkUrl: form.linkUrl,
+            order: Number(form.order) || 0,
+            active: form.active,
+          })
+        }
       }
       resetForm()
       load()
@@ -201,6 +230,24 @@ export default function Banners() {
         <button type="button" className="btn btn-sm" onClick={() => fileRef.current?.click()}>
           {editing ? 'Remplacer le média' : 'Choisir un média (image ou vidéo)'}
         </button>
+        <select
+          className="input"
+          value={selectedMediaUrl}
+          onChange={(e) => {
+            setSelectedMediaUrl(e.target.value)
+            if (e.target.value) {
+              setPreview(e.target.value)
+              setIsVideo(false)
+              setFile(null)
+              if (fileRef.current) fileRef.current.value = ''
+            }
+          }}
+        >
+          <option value="">Ou choisir depuis la médiathèque</option>
+          {media.filter((m) => m.mediaType === 'IMAGE').map((m) => (
+            <option key={m.id} value={m.url}>{m.folder || 'media'} · {m.url.slice(0, 60)}...</option>
+          ))}
+        </select>
         {file && <span style={{ fontSize: 12, color: 'var(--text2)' }}>{file.name} {isVideo && '· VIDÉO'}</span>}
 
         <div style={{ display: 'flex', gap: 10 }}>

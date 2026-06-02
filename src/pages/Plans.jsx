@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
-import { plansService } from '../services/api'
+import { plansService, mediaService } from '../services/api'
 import { Loading, EmptyState, StatusBadge } from '../components/UI'
 
 const formatXof = (v) => v ? new Intl.NumberFormat('fr-FR').format(Number(v) / 100) + ' FCFA' : '—'
@@ -25,15 +25,22 @@ export default function Plans() {
   const [heroFile, setHeroFile] = useState(null)
   const [heroPreview, setHeroPreview] = useState(null)
   const [saving, setSaving] = useState(false)
+  const [media, setMedia] = useState([])
+  const [selectedMediaUrl, setSelectedMediaUrl] = useState('')
   const fileRef = useRef(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await plansService.getAll()
+      const [res, med] = await Promise.all([
+        plansService.getAll(),
+        mediaService.getAll().catch(() => []),
+      ])
       setPlans(Array.isArray(res) ? res : [])
+      setMedia(Array.isArray(med) ? med : [])
     } catch {
       setPlans([])
+      setMedia([])
     }
     setLoading(false)
   }, [])
@@ -44,6 +51,7 @@ export default function Plans() {
     setForm(EMPTY_FORM)
     setHeroFile(null)
     setHeroPreview(null)
+    setSelectedMediaUrl('')
     setModal({ mode: 'create' })
   }
 
@@ -61,6 +69,7 @@ export default function Plans() {
     })
     setHeroFile(null)
     setHeroPreview(plan.heroImageUrl || null)
+    setSelectedMediaUrl('')
     setModal({ mode: 'edit', plan })
   }
 
@@ -68,6 +77,7 @@ export default function Plans() {
     setModal(null)
     setHeroFile(null)
     setHeroPreview(null)
+    setSelectedMediaUrl('')
   }
 
   const onPickHero = (e) => {
@@ -95,13 +105,18 @@ export default function Plans() {
     try {
       if (modal.mode === 'create') {
         const created = await plansService.create(payloadFromForm())
-        if (heroFile && created?.id) {
-          await plansService.uploadHero(created.id, heroFile)
+        if (created?.id) {
+          if (heroFile) await plansService.uploadHero(created.id, heroFile)
+          if (!heroFile && selectedMediaUrl) {
+            await plansService.update(created.id, { heroImageUrl: selectedMediaUrl })
+          }
         }
       } else if (modal.plan?.id) {
         await plansService.update(modal.plan.id, payloadFromForm())
         if (heroFile) {
           await plansService.uploadHero(modal.plan.id, heroFile)
+        } else if (selectedMediaUrl) {
+          await plansService.update(modal.plan.id, { heroImageUrl: selectedMediaUrl })
         }
       }
       closeModal()
@@ -184,6 +199,24 @@ export default function Plans() {
               <button type="button" className="btn btn-sm" style={{ marginTop: 8 }} onClick={() => fileRef.current?.click()}>
                 Choisir une image depuis l&apos;appareil
               </button>
+              <select
+                className="input"
+                style={{ width: '100%', marginTop: 8 }}
+                value={selectedMediaUrl}
+                onChange={(e) => {
+                  setSelectedMediaUrl(e.target.value)
+                  if (e.target.value) {
+                    setHeroPreview(e.target.value)
+                    setHeroFile(null)
+                    if (fileRef.current) fileRef.current.value = ''
+                  }
+                }}
+              >
+                <option value="">Ou choisir depuis la médiathèque</option>
+                {media.filter((m) => m.mediaType === 'IMAGE').map((m) => (
+                  <option key={m.id} value={m.url}>{m.folder || 'media'} · {m.url.slice(0, 60)}...</option>
+                ))}
+              </select>
             </div>
 
             <label style={{ display: 'block', marginBottom: 12 }}>
