@@ -379,6 +379,7 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
     label: block?.label || '',
     type: block?.type || 'SHORT_TEXT',
     value: block?.value || '',
+    valueEn: block?.valueEn || '',
     parentKey: block?.parentKey || '',
     order: block?.order ?? 0,
     active: block?.active ?? true,
@@ -406,6 +407,7 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
           label: form.label,
           type: form.type,
           value: form.value,
+          valueEn: form.valueEn || null,
           parentKey: form.parentKey || null,
           order: Number(form.order) || 0,
           active: form.active,
@@ -417,6 +419,7 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
           label: form.label,
           type: form.type,
           value: form.value,
+          valueEn: form.valueEn || undefined,
           parentKey: form.parentKey || undefined,
           order: Number(form.order) || 0,
           active: form.active,
@@ -534,6 +537,16 @@ function EditModal({ block, defaultSection, onClose, onSave, onUploadImage, canE
               rows={form.type === 'SHORT_TEXT' ? 2 : 6}
               value={form.value}
               onChange={(e) => setForm({ ...form, value: e.target.value })}
+              style={{ ...inputStyle(false), resize: 'vertical', minHeight: 60, lineHeight: 1.5 }}
+            />
+          </Field>
+
+          <Field label="Valeur (English)">
+            <textarea
+              rows={form.type === 'SHORT_TEXT' ? 2 : 6}
+              value={form.valueEn}
+              onChange={(e) => setForm({ ...form, valueEn: e.target.value })}
+              placeholder="English translation for the app"
               style={{ ...inputStyle(false), resize: 'vertical', minHeight: 60, lineHeight: 1.5 }}
             />
           </Field>
