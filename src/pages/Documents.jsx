@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
-import { Check, X, Eye, RefreshCw } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { Eye, RefreshCw } from 'lucide-react'
 import { StatusBadge, EmptyState, SearchBar, Modal, Loading } from '../components/UI'
 import { DOC_LABELS } from '../constants/documentTypes'
 import { documentsService } from '../services/api'
@@ -47,8 +48,7 @@ export default function Documents() {
   const [statusFilter,  setStatusFilter]  = useState('PENDING')
   const [search,        setSearch]        = useState('')
   const [selected,      setSelected]      = useState(null)
-  const [reason,        setReason]        = useState('')
-  const [actionLoading, setActionLoading] = useState(false)
+  const navigate = useNavigate()
 
   const loadDocuments = useCallback(async () => {
     setLoading(true)
@@ -93,31 +93,15 @@ export default function Documents() {
     return icons[type] || 'M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z'
   }
 
-  const approveDocument = async (id) => {
-    setActionLoading(true)
-    try {
-      await documentsService.approve(id)
-      setDocuments(prev => prev.map(d => d.id === id ? { ...d, status: 'APPROVED' } : d))
-      setSelected(null)
-    } catch (e) { alert('Erreur: ' + (e?.response?.data?.message || e.message)) }
-    setActionLoading(false)
-  }
-
-  const rejectDocument = async (id) => {
-    if (!reason.trim()) { alert('Entrez une raison de rejet'); return }
-    setActionLoading(true)
-    try {
-      await documentsService.reject(id, reason)
-      setDocuments(prev => prev.map(d => d.id === id ? { ...d, status: 'REJECTED' } : d))
-      setSelected(null)
-      setReason('')
-    } catch (e) { alert('Erreur: ' + (e?.response?.data?.message || e.message)) }
-    setActionLoading(false)
-  }
-
   return (
     <div className="fade-in">
       <div style={{ padding: '24px 28px 40px' }}>
+        <h1 style={{ fontFamily: 'Sora,sans-serif', fontSize: 22, fontWeight: 800, marginBottom: 8 }}>
+          Documents KYC (consultation)
+        </h1>
+        <p style={{ fontSize: 13, color: 'var(--text2)', marginBottom: 16 }}>
+          Consultez les pièces d&apos;identité. La validation se fait au niveau du compte investisseur.
+        </p>
         <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
           <span style={{ fontSize: 13, color: 'var(--text2)', marginRight: 'auto' }}>
             {pendingCount} document(s) en attente
@@ -164,18 +148,13 @@ export default function Documents() {
                 <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
                   <StatusBadge status={doc.status} />
                   <div style={{ display: 'flex', gap: 6 }}>
-                    <button className="btn btn-ghost btn-sm" onClick={() => { setSelected(doc); setReason('') }}>
+                    <button className="btn btn-ghost btn-sm" onClick={() => setSelected(doc)}>
                       <Eye size={13} /> Voir
                     </button>
-                    {doc.status === 'PENDING' && (
-                      <>
-                        <button className="btn btn-sm" style={{ background: 'var(--green)', color: '#fff' }} onClick={() => approveDocument(doc.id)} disabled={actionLoading}>
-                          <Check size={13} />
-                        </button>
-                        <button className="btn btn-sm" style={{ background: 'var(--red)', color: '#fff' }} onClick={() => { setSelected(doc); setReason('') }} disabled={actionLoading}>
-                          <X size={13} />
-                        </button>
-                      </>
+                    {doc.user?.id && (
+                      <button className="btn btn-sm" onClick={() => navigate(`/investors/${doc.user.id}`)}>
+                        Fiche investisseur
+                      </button>
                     )}
                   </div>
                 </div>
@@ -204,23 +183,10 @@ export default function Documents() {
             <strong>Investisseur :</strong> {getDriverName(selected)} &nbsp;•&nbsp; {formatDate(selected.createdAt || selected.uploadedAt)}
           </div>
 
-          {selected.status === 'PENDING' && (
-            <>
-              <textarea
-                placeholder="Raison du rejet (obligatoire pour rejeter)..."
-                value={reason}
-                onChange={e => setReason(e.target.value)}
-                style={{ width: '100%', minHeight: 80, padding: '10px 12px', borderRadius: 10, border: '1.5px solid var(--border)', background: 'var(--surface2)', fontSize: 13, color: 'var(--text)', fontFamily: 'inherit', resize: 'vertical', marginBottom: 14, boxSizing: 'border-box' }}
-              />
-              <div style={{ display: 'flex', gap: 10 }}>
-                <button className="btn btn-primary" style={{ flex: 1, background: 'var(--green)', justifyContent: 'center' }} onClick={() => approveDocument(selected.id)} disabled={actionLoading}>
-                  <Check size={15} /> Approuver
-                </button>
-                <button className="btn btn-primary" style={{ flex: 1, background: 'var(--red)', justifyContent: 'center' }} onClick={() => rejectDocument(selected.id)} disabled={actionLoading}>
-                  <X size={15} /> Rejeter
-                </button>
-              </div>
-            </>
+          {selected.user?.id && (
+            <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} onClick={() => navigate(`/investors/${selected.user.id}`)}>
+              Valider le compte investisseur
+            </button>
           )}
         </Modal>
       )}

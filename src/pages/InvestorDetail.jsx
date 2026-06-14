@@ -64,7 +64,7 @@ export default function InvestorDetail() {
               <button className="btn btn-sm btn-primary" onClick={async () => { await investorsService.activate(user.id); load() }}>Activer</button>
             )}
             {user.kycStatus !== 'APPROVED' && (
-              <button className="btn btn-sm btn-primary" onClick={async () => { await investorsService.approveKyc(user.id); load() }}>Approuver KYC</button>
+              <button className="btn btn-sm btn-primary" onClick={async () => { await investorsService.approveKyc(user.id); load() }}>Valider le compte</button>
             )}
           </div>
         </div>

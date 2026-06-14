@@ -9,12 +9,14 @@ import { useRealtimeSync } from '../hooks/useRealtimeSync'
 import { exportToCsv } from '../utils/exportCsv'
 
 const STATUS_OPTIONS = ['ALL', 'ACTIVE', 'PENDING_VERIFICATION', 'SUSPENDED', 'CLOSED']
+const KYC_FILTER_OPTIONS = ['ALL', 'IN_REVIEW', 'DOCUMENTS_RECEIVED', 'APPROVED', 'REJECTED']
 
 export default function Investors() {
   const navigate = useNavigate()
   const [investors, setInvestors] = useState([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
+  const [kycFilter, setKycFilter] = useState('ALL')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(new Set())
@@ -25,6 +27,7 @@ export default function Investors() {
     try {
       const res = await investorsService.getAll({
         ...(statusFilter !== 'ALL' && { status: statusFilter }),
+        ...(kycFilter !== 'ALL' && { kycStatus: kycFilter }),
         ...(search && { search }),
       })
       setInvestors(res?.items || [])
@@ -32,7 +35,7 @@ export default function Investors() {
       setError('Erreur de chargement')
     }
     setLoading(false)
-  }, [statusFilter, search])
+  }, [statusFilter, kycFilter, search])
 
   useRealtimeSync(load, { interval: 45000, debounceMs: 2000, topics: ['user', 'users'] })
 
@@ -110,6 +113,7 @@ export default function Investors() {
       <div style={{ padding: '24px 28px 16px', display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
         <SearchBar value={search} onChange={setSearch} placeholder="Rechercher..." />
         <FilterTabs options={STATUS_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
+        <FilterTabs options={KYC_FILTER_OPTIONS} value={kycFilter} onChange={setKycFilter} />
         <button className="btn btn-sm" onClick={exportCsv} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
           <Download size={14} /> CSV
         </button>
@@ -147,7 +151,7 @@ export default function Investors() {
                   <td style={{ padding: '12px 8px', textAlign: 'right', display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
                     <button className="btn btn-sm" onClick={() => navigate(`/investors/${u.id}`)}>Voir</button>
                     {u.kycStatus !== 'APPROVED' && (
-                      <button className="btn btn-sm btn-primary" onClick={() => approveKyc(u.id)}>KYC ✓</button>
+                      <button className="btn btn-sm btn-primary" onClick={() => approveKyc(u.id)}>Valider le compte</button>
                     )}
                     <button className="btn btn-sm" onClick={() => toggleSuspend(u)}>
                       {u.accountStatus === 'SUSPENDED' ? 'Activer' : 'Suspendre'}
@@ -166,7 +170,7 @@ export default function Investors() {
         onClear={clearSelection}
         actions={[
           { label: 'Exporter CSV', icon: <Download size={14} />, onClick: exportCsv },
-          { label: 'Approuver KYC', icon: <Check size={14} />, color: '#10B981', onClick: bulkApproveKyc },
+          { label: 'Valider le compte', icon: <Check size={14} />, color: '#10B981', onClick: bulkApproveKyc },
           { label: 'Suspendre', icon: <Pause size={14} />, danger: true, onClick: bulkSuspend },
         ]}
       />
