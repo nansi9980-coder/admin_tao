@@ -175,10 +175,10 @@ export default function Dashboard() {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 700, fontSize: 14 }}>Actions requises</div>
             <div style={{ fontSize: 13, color: 'var(--text2)' }}>
-              {stats?.pendingKyc || 0} document(s) KYC et {stats?.pendingDeposits || 0} dépôt(s) en attente de validation.
+              {stats?.pendingKyc || 0} compte(s) en attente de validation et {stats?.pendingDeposits || 0} dépôt(s) en attente.
             </div>
           </div>
-          <Link to="/documents" className="btn btn-sm btn-primary">Traiter KYC</Link>
+          <Link to="/investors" className="btn btn-sm btn-primary">Valider les comptes</Link>
           <Link to="/finance" className="btn btn-sm btn-ghost">Finances</Link>
         </div>
       )}
