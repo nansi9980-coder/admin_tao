@@ -120,15 +120,6 @@ export const mediaService = {
   delete: (id) => api.delete(`admin/mediatek/${id}`),
 }
 
-export const driversService = {
-  getAll: (params = {}) => api.get(`admin/drivers?${new URLSearchParams(params)}`),
-  getOne: (id) => api.get(`admin/drivers/${id}`),
-  approve: (id) => api.patch(`admin/drivers/${id}/approve`),
-  reject: (id, reason) => api.patch(`admin/drivers/${id}/reject`, { reason }),
-  suspend: (id) => api.patch(`admin/drivers/${id}/suspend`),
-  activate: (id) => api.patch(`admin/drivers/${id}/activate`),
-}
-
 export const auditService = {
   getAll: (params = {}) => api.get(`admin/audit-logs?${new URLSearchParams(params)}`),
 }

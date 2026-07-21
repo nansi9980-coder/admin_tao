@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import Sidebar from './components/Sidebar'
 import AdminLayout from './components/AdminLayout'
@@ -158,14 +158,27 @@ export default function App() {
           <AnimatedRoutes role={role} />
         </main>
         <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} role={role} />
-        <NotificationDrawer
+        <NotificationNav
           open={notifOpen}
           onClose={() => setNotifOpen(false)}
           items={notifications}
-          onClickItem={(it) => { if (it.link) window.location.hash = it.link }}
         />
       </div>
     </BrowserRouter>
+  )
+}
+
+function NotificationNav({ open, onClose, items }) {
+  const navigate = useNavigate()
+  return (
+    <NotificationDrawer
+      open={open}
+      onClose={onClose}
+      items={items}
+      onClickItem={(it) => {
+        if (it.link) navigate(it.link)
+      }}
+    />
   )
 }
 

@@ -109,7 +109,7 @@ export default function Documents() {
           <button className="btn btn-ghost btn-sm" onClick={loadDocuments}>
             <RefreshCw size={14} /> Rafraîchir
           </button>
-          <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un chauffeur..." />
+          <SearchBar value={search} onChange={setSearch} placeholder="Rechercher un investisseur..." />
           <select
             value={statusFilter}
             onChange={e => setStatusFilter(e.target.value)}
