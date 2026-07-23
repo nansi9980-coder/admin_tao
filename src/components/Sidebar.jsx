@@ -27,7 +27,7 @@ const NAV = [
 
 export default function Sidebar({ badges = {}, user, onLogout, collapsed, onToggleCollapsed }) {
   const width = collapsed ? 76 : 240
-  const role = user?.role || 'READ_ONLY'
+  const role = { role: user?.role || 'READ_ONLY', permissions: user?.permissions || [] }
 
   return (
     <motion.aside

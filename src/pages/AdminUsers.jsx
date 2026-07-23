@@ -3,17 +3,22 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Plus, Shield, Power, KeyRound, Edit3, Copy, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { adminUsersService } from '../services/api'
-import { ROLE_LABELS } from '../utils/permissions'
+import { ROLE_LABELS, ROLE_PERMISSIONS, PERMISSION_GROUPS } from '../utils/permissions'
 import { Loading, EmptyState } from '../components/UI'
 
-const ROLES = ['SUPER_ADMIN', 'DG', 'COMPLIANCE', 'MARKETING', 'FINANCE', 'SERVICE_MANAGER', 'READ_ONLY']
+const ROLES = ['SUPER_ADMIN', 'DG', 'COMPLIANCE', 'MARKETING', 'FINANCE', 'SUPPORT', 'SERVICE_MANAGER', 'READ_ONLY']
+
+const emptyForm = () => ({
+  firstName: '', lastName: '', email: '', role: 'READ_ONLY', twoFactorRequired: true, permissions: [],
+})
 
 export default function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState(null)
-  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', role: 'READ_ONLY', twoFactorRequired: true })
+  const [form, setForm] = useState(emptyForm())
+  const [customizePerms, setCustomizePerms] = useState(false)
   const [saving, setSaving] = useState(false)
   const [tempPassword, setTempPassword] = useState(null)
 
@@ -32,9 +37,19 @@ export default function AdminUsers() {
 
   useEffect(() => { load() }, [load])
 
+  const togglePerm = (key) => {
+    setForm((f) => ({
+      ...f,
+      permissions: f.permissions.includes(key)
+        ? f.permissions.filter((p) => p !== key)
+        : [...f.permissions, key],
+    }))
+  }
+
   const submit = async (e) => {
     e.preventDefault()
     setSaving(true)
+    const permissions = customizePerms ? form.permissions : []
     try {
       if (editing) {
         await adminUsersService.update(editing.id, {
@@ -42,10 +57,11 @@ export default function AdminUsers() {
           lastName: form.lastName,
           role: form.role,
           twoFactorRequired: form.twoFactorRequired,
+          permissions,
         })
         toast.success('Administrateur mis à jour')
       } else {
-        const res = await adminUsersService.create(form)
+        const res = await adminUsersService.create({ ...form, permissions })
         if (res?.temporaryPassword) {
           setTempPassword({ email: form.email, password: res.temporaryPassword })
         }
@@ -53,7 +69,8 @@ export default function AdminUsers() {
       }
       setShowForm(false)
       setEditing(null)
-      setForm({ firstName: '', lastName: '', email: '', role: 'READ_ONLY', twoFactorRequired: true })
+      setCustomizePerms(false)
+      setForm(emptyForm())
       load()
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message)
@@ -115,7 +132,7 @@ export default function AdminUsers() {
         <button
           className="btn btn-primary"
           style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
-          onClick={() => { setEditing(null); setForm({ firstName: '', lastName: '', email: '', role: 'READ_ONLY', twoFactorRequired: false }); setShowForm(true) }}
+          onClick={() => { setEditing(null); setCustomizePerms(false); setForm(emptyForm()); setShowForm(true) }}
         >
           <Plus size={14} /> Nouvel administrateur
         </button>
@@ -131,13 +148,42 @@ export default function AdminUsers() {
           <input className="input" placeholder="Prénom" value={form.firstName} onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))} required />
           <input className="input" placeholder="Nom" value={form.lastName} onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))} required />
           <input className="input" type="email" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} required disabled={Boolean(editing)} />
-          <select className="input" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}>
+          <select className="input" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} disabled={form.role === 'SUPER_ADMIN' && editing}>
             {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
           </select>
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
             <input type="checkbox" checked={form.twoFactorRequired} onChange={e => setForm(f => ({ ...f, twoFactorRequired: e.target.checked }))} />
             Exiger l'activation de la 2FA
           </label>
+
+          {form.role !== 'SUPER_ADMIN' && form.role !== 'DG' && (
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                <input type="checkbox" checked={customizePerms} onChange={e => setCustomizePerms(e.target.checked)} />
+                Personnaliser précisément les accès (sinon : accès par défaut du rôle « {ROLE_LABELS[form.role]} »)
+              </label>
+              {customizePerms && (
+                <div style={{
+                  display: 'grid', gap: 14, gridTemplateColumns: 'repeat(2, 1fr)',
+                  background: 'var(--surface-soft)', border: '1px solid var(--border)',
+                  borderRadius: 10, padding: 16,
+                }}>
+                  {PERMISSION_GROUPS.map((group) => (
+                    <div key={group.label}>
+                      <div style={{ fontWeight: 700, fontSize: 12, color: 'var(--text2)', marginBottom: 6 }}>{group.label}</div>
+                      {group.perms.map((p) => (
+                        <label key={p.key} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, padding: '3px 0' }}>
+                          <input type="checkbox" checked={form.permissions.includes(p.key)} onChange={() => togglePerm(p.key)} />
+                          {p.label}
+                        </label>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
             <button type="button" className="btn btn-ghost" onClick={() => { setShowForm(false); setEditing(null) }}>Annuler</button>
             <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Envoi…' : editing ? 'Enregistrer' : 'Créer & inviter'}</button>
@@ -223,7 +269,12 @@ export default function AdminUsers() {
               {u.twoFactorRequired && (
                 <span style={{ fontSize: 10, color: '#E89B3C', fontWeight: 700 }}>2FA requise</span>
               )}
-              <button className="btn btn-sm btn-ghost" onClick={() => { setEditing(u); setForm({ firstName: u.firstName, lastName: u.lastName, email: u.email, role: u.role, twoFactorRequired: !!u.twoFactorRequired }); setShowForm(true) }}>
+              <button className="btn btn-sm btn-ghost" onClick={() => {
+                setEditing(u)
+                setForm({ firstName: u.firstName, lastName: u.lastName, email: u.email, role: u.role, twoFactorRequired: !!u.twoFactorRequired, permissions: u.permissions || [] })
+                setCustomizePerms(Boolean(u.permissions?.length))
+                setShowForm(true)
+              }}>
                 <Edit3 size={14} /> Modifier
               </button>
               <button className="btn btn-sm" onClick={() => reset(u)}>

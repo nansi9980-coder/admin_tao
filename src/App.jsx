@@ -46,6 +46,8 @@ export default function App() {
   const [notifications, setNotifications] = useState([])
 
   const role = user?.role || 'READ_ONLY'
+  const permissions = user?.permissions || []
+  const authUser = { role, permissions }
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -86,9 +88,9 @@ export default function App() {
   const loadBadges = useCallback(async () => {
     try {
       const tasks = []
-      if (hasPerm(role, 'kyc.view')) tasks.push(documentsService.getAll('PENDING')); else tasks.push(Promise.resolve([]))
-      if (hasPerm(role, 'finance.view')) tasks.push(financeService.getPendingDeposits()); else tasks.push(Promise.resolve([]))
-      if (hasPerm(role, 'service-requests.view')) tasks.push(serviceRequestsService.getAll('PENDING')); else tasks.push(Promise.resolve([]))
+      if (hasPerm(authUser, 'kyc.view')) tasks.push(documentsService.getAll('PENDING')); else tasks.push(Promise.resolve([]))
+      if (hasPerm(authUser, 'finance.view')) tasks.push(financeService.getPendingDeposits()); else tasks.push(Promise.resolve([]))
+      if (hasPerm(authUser, 'service-requests.view')) tasks.push(serviceRequestsService.getAll('PENDING')); else tasks.push(Promise.resolve([]))
       const [docs, pending, requests] = await Promise.all(tasks)
       const next = {
         docs: Array.isArray(docs) ? docs.length : 0,
@@ -155,9 +157,9 @@ export default function App() {
             onNotificationsClick={() => setNotifOpen(true)}
             onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
           />
-          <AnimatedRoutes role={role} />
+          <AnimatedRoutes role={authUser} />
         </main>
-        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} role={role} />
+        <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} role={authUser} />
         <NotificationNav
           open={notifOpen}
           onClose={() => setNotifOpen(false)}

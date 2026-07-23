@@ -50,6 +50,7 @@ export const dashboardService = {
 export const investorsService = {
   getAll: (params = {}) => api.get(`admin/users?${new URLSearchParams(params)}`),
   getOne: (id) => api.get(`admin/users/${id}`),
+  create: (data) => api.post('admin/users', data),
   suspend: (id) => api.patch(`admin/users/${id}/suspend`),
   activate: (id) => api.patch(`admin/users/${id}/activate`),
   approveKyc: (id) => api.patch(`admin/users/${id}/kyc/approve`),

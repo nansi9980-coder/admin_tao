@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Download, Check, Pause } from 'lucide-react'
+import { Download, Check, Pause, Plus, Copy, X, KeyRound } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { investorsService } from '../services/api'
 import { SearchBar, StatusBadge, Loading, EmptyState, FilterTabs } from '../components/UI'
@@ -20,6 +20,10 @@ export default function Investors() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selected, setSelected] = useState(new Set())
+  const [showCreate, setShowCreate] = useState(false)
+  const [createForm, setCreateForm] = useState({ firstName: '', lastName: '', email: '', phone: '' })
+  const [creating, setCreating] = useState(false)
+  const [tempCreds, setTempCreds] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -62,6 +66,23 @@ export default function Investors() {
   }
 
   const formatName = (u) => [u.firstName, u.lastName].filter(Boolean).join(' ') || u.email
+
+  const createUser = async (e) => {
+    e.preventDefault()
+    setCreating(true)
+    try {
+      const res = await investorsService.create(createForm)
+      setTempCreds({ email: res.email, password: res.temporaryPassword })
+      toast.success('Utilisateur créé')
+      setShowCreate(false)
+      setCreateForm({ firstName: '', lastName: '', email: '', phone: '' })
+      load()
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message)
+    } finally {
+      setCreating(false)
+    }
+  }
 
   const toggleSelect = (id) => {
     setSelected((s) => {
@@ -114,10 +135,80 @@ export default function Investors() {
         <SearchBar value={search} onChange={setSearch} placeholder="Rechercher..." />
         <FilterTabs options={STATUS_OPTIONS} value={statusFilter} onChange={setStatusFilter} />
         <FilterTabs options={KYC_FILTER_OPTIONS} value={kycFilter} onChange={setKycFilter} />
-        <button className="btn btn-sm" onClick={exportCsv} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button className="btn btn-primary btn-sm" onClick={() => setShowCreate(true)} style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <Plus size={14} /> Nouvel utilisateur
+        </button>
+        <button className="btn btn-sm" onClick={exportCsv} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <Download size={14} /> CSV
         </button>
       </div>
+
+      {showCreate && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+          onClick={() => setShowCreate(false)}
+        >
+          <form
+            onSubmit={createUser}
+            className="card"
+            style={{ padding: 24, maxWidth: 440, width: '100%', display: 'grid', gap: 12 }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <h3 style={{ margin: 0, fontFamily: 'Sora' }}>Nouvel utilisateur</h3>
+              <button type="button" onClick={() => setShowCreate(false)} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text2)' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <input className="input" placeholder="Prénom" value={createForm.firstName} onChange={e => setCreateForm(f => ({ ...f, firstName: e.target.value }))} required />
+            <input className="input" placeholder="Nom" value={createForm.lastName} onChange={e => setCreateForm(f => ({ ...f, lastName: e.target.value }))} required />
+            <input className="input" type="email" placeholder="Email" value={createForm.email} onChange={e => setCreateForm(f => ({ ...f, email: e.target.value }))} required />
+            <input className="input" placeholder="Téléphone (optionnel)" value={createForm.phone} onChange={e => setCreateForm(f => ({ ...f, phone: e.target.value }))} />
+            <p style={{ fontSize: 12, color: 'var(--text2)', margin: 0 }}>
+              Un mot de passe temporaire sera généré. L'utilisateur devra le changer à sa première connexion.
+            </p>
+            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+              <button type="button" className="btn btn-ghost" onClick={() => setShowCreate(false)}>Annuler</button>
+              <button type="submit" className="btn btn-primary" disabled={creating}>{creating ? 'Création…' : 'Créer'}</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {tempCreds && (
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 20 }}
+          onClick={() => setTempCreds(null)}
+        >
+          <div className="card" style={{ padding: 24, maxWidth: 440, width: '100%' }} onClick={(e) => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <KeyRound size={20} color="#E89B3C" />
+              <h3 style={{ margin: 0, fontFamily: 'Sora' }}>Identifiants temporaires</h3>
+              <button onClick={() => setTempCreds(null)} style={{ marginLeft: 'auto', background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text2)' }}>
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ color: 'var(--text2)', margin: '0 0 14px', fontSize: 13 }}>
+              Communiquez ces identifiants à <strong style={{ color: 'var(--text)' }}>{tempCreds.email}</strong> par un canal sécurisé.
+            </p>
+            <div style={{
+              background: 'var(--surface-soft)', border: '1px dashed var(--border)', padding: '14px 16px',
+              borderRadius: 10, fontFamily: 'monospace', fontSize: 16, fontWeight: 700, color: 'var(--text)',
+              letterSpacing: 1.5, textAlign: 'center', wordBreak: 'break-all',
+            }}>
+              {tempCreds.password}
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 16, justifyContent: 'flex-end' }}>
+              <button className="btn btn-ghost" onClick={() => setTempCreds(null)}>Fermer</button>
+              <button className="btn btn-primary" onClick={async () => {
+                try { await navigator.clipboard.writeText(tempCreds.password); toast.success('Copié') } catch { toast.error('Impossible de copier') }
+              }}>
+                <Copy size={14} /> Copier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading ? <Loading /> : error ? <EmptyState title={error} /> : (
         <div style={{ flex: 1, overflow: 'auto', padding: '0 28px 28px' }}>
