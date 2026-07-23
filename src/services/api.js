@@ -177,6 +177,7 @@ export const adminUsersService = {
   getAll: () => api.get('admin/admin-users'),
   create: (data) => api.post('admin/admin-users', data),
   update: (id, data) => api.patch(`admin/admin-users/${id}`, data),
+  remove: (id) => api.delete(`admin/admin-users/${id}`),
   disable: (id) => api.patch(`admin/admin-users/${id}/disable`),
   enable: (id) => api.patch(`admin/admin-users/${id}/enable`),
   forcePasswordChange: (id) => api.patch(`admin/admin-users/${id}/force-password-change`),

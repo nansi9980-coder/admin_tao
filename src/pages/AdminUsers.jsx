@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Shield, Power, KeyRound, Edit3, Copy, X } from 'lucide-react'
+import { Plus, Shield, Power, KeyRound, Edit3, Copy, X, Trash2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { adminUsersService } from '../services/api'
 import { ROLE_LABELS, ROLE_PERMISSIONS, PERMISSION_GROUPS } from '../utils/permissions'
@@ -84,6 +84,17 @@ export default function AdminUsers() {
       if (u.active) await adminUsersService.disable(u.id)
       else await adminUsersService.enable(u.id)
       toast.success(u.active ? 'Désactivé' : 'Activé')
+      load()
+    } catch (err) {
+      toast.error(err?.response?.data?.message || err.message)
+    }
+  }
+
+  const remove = async (u) => {
+    if (!confirm(`Supprimer définitivement le compte de ${u.firstName} ${u.lastName} (${u.email}) ? Cette action est irréversible.`)) return
+    try {
+      await adminUsersService.remove(u.id)
+      toast.success('Administrateur supprimé')
       load()
     } catch (err) {
       toast.error(err?.response?.data?.message || err.message)
@@ -284,6 +295,11 @@ export default function AdminUsers() {
               <button className="btn btn-sm" onClick={() => toggle(u)} style={{ color: u.active ? '#EF4444' : '#10B981' }}>
                 <Power size={14} /> {u.active ? 'Désactiver' : 'Activer'}
               </button>
+              {u.role !== 'SUPER_ADMIN' && (
+                <button className="btn btn-sm" onClick={() => remove(u)} style={{ color: '#EF4444' }}>
+                  <Trash2 size={14} /> Supprimer
+                </button>
+              )}
             </motion.div>
           ))}
         </div>
