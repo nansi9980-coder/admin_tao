@@ -1,9 +1,24 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import { investorsService } from '../services/api'
 import { TopBar, StatusBadge, Loading, EmptyState } from '../components/UI'
 
 const formatXof = (v) => v != null ? new Intl.NumberFormat('fr-FR').format(Number(v) / 100) + ' FCFA' : '—'
+
+const VISIBILITY_LABELS = {
+  ALL: 'Visible par tous les admins',
+  ASSIGNED: 'Assigné à un admin précis',
+  RESTRICTED: 'Restreint au super admin uniquement',
+}
+
+function currentAdmin() {
+  try {
+    return JSON.parse(localStorage.getItem('taoman_admin_user') || 'null')
+  } catch {
+    return null
+  }
+}
 
 export default function InvestorDetail() {
   const { id } = useParams()
@@ -11,6 +26,8 @@ export default function InvestorDetail() {
   const [user, setUser] = useState(null)
   const [tab, setTab] = useState('profil')
   const [loading, setLoading] = useState(true)
+  const [savingVisibility, setSavingVisibility] = useState(false)
+  const isSuperAdmin = currentAdmin()?.role === 'SUPER_ADMIN'
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,6 +84,36 @@ export default function InvestorDetail() {
               <button className="btn btn-sm btn-primary" onClick={async () => { await investorsService.approveKyc(user.id); load() }}>Valider le compte</button>
             )}
           </div>
+
+          {isSuperAdmin && (
+            <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid var(--border)' }}>
+              <p style={{ fontWeight: 700, marginBottom: 6 }}>Visibilité du compte</p>
+              <p style={{ fontSize: 12, color: 'var(--text2)', marginBottom: 10 }}>
+                Actuellement : {VISIBILITY_LABELS[user.visibility] || 'Visible par tous les admins'}
+              </p>
+              <select
+                className="input"
+                style={{ maxWidth: 320 }}
+                value={user.visibility || 'ALL'}
+                disabled={savingVisibility}
+                onChange={async (e) => {
+                  setSavingVisibility(true)
+                  try {
+                    await investorsService.updateVisibility(user.id, { visibility: e.target.value })
+                    toast.success('Visibilité mise à jour')
+                    load()
+                  } catch (err) {
+                    toast.error(err?.response?.data?.message || err.message)
+                  } finally {
+                    setSavingVisibility(false)
+                  }
+                }}
+              >
+                <option value="ALL">Visible par tous les admins</option>
+                <option value="RESTRICTED">Restreint au super admin uniquement (VIP)</option>
+              </select>
+            </div>
+          )}
         </div>
       )}
 

@@ -55,6 +55,7 @@ export const investorsService = {
   activate: (id) => api.patch(`admin/users/${id}/activate`),
   approveKyc: (id) => api.patch(`admin/users/${id}/kyc/approve`),
   rejectKyc: (id, reason) => api.patch(`admin/users/${id}/kyc/reject`, { reason }),
+  updateVisibility: (id, data) => api.patch(`admin/users/${id}/visibility`, data),
 }
 
 export const documentsService = {
