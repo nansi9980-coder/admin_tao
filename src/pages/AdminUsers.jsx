@@ -9,7 +9,7 @@ import { Loading, EmptyState } from '../components/UI'
 const ROLES = ['SUPER_ADMIN', 'DG', 'COMPLIANCE', 'MARKETING', 'FINANCE', 'SUPPORT', 'SERVICE_MANAGER', 'READ_ONLY']
 
 const emptyForm = () => ({
-  firstName: '', lastName: '', email: '', role: 'READ_ONLY', twoFactorRequired: true, permissions: [],
+  firstName: '', lastName: '', email: '', password: '', role: 'READ_ONLY', twoFactorRequired: true, permissions: [],
 })
 
 export default function AdminUsers() {
@@ -61,7 +61,12 @@ export default function AdminUsers() {
         })
         toast.success('Administrateur mis à jour')
       } else {
-        const res = await adminUsersService.create({ ...form, permissions })
+        const { password, ...rest } = form
+        const res = await adminUsersService.create({
+          ...rest,
+          permissions,
+          ...(password.trim() && { password: password.trim() }),
+        })
         if (res?.temporaryPassword) {
           setTempPassword({ email: form.email, password: res.temporaryPassword })
         }
@@ -162,6 +167,13 @@ export default function AdminUsers() {
           <select className="input" value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))} disabled={form.role === 'SUPER_ADMIN' && editing}>
             {ROLES.map(r => <option key={r} value={r}>{ROLE_LABELS[r]}</option>)}
           </select>
+          {!editing && (
+            <input
+              className="input" type="password" placeholder="Mot de passe (optionnel — sinon généré automatiquement)"
+              value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+              minLength={8} style={{ gridColumn: '1 / -1' }}
+            />
+          )}
           <label style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1 / -1' }}>
             <input type="checkbox" checked={form.twoFactorRequired} onChange={e => setForm(f => ({ ...f, twoFactorRequired: e.target.checked }))} />
             Exiger l'activation de la 2FA
