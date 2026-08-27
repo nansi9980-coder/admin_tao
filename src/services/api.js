@@ -7,7 +7,8 @@ const BASE_URL = API_BASE.endsWith('/') ? API_BASE : `${API_BASE}/`
 
 const api = axios.create({
   baseURL: BASE_URL,
-  timeout: 15000,
+  // Render (cold start) peut mettre 15-30s à répondre après une mise en veille.
+  timeout: 40000,
   headers: { 'Content-Type': 'application/json' },
 })
 

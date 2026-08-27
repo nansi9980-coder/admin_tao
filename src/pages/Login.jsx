@@ -49,7 +49,7 @@ export default function Login({ onLogin }) {
     } catch (err) {
       if (!err.response) {
         setError(
-          'Impossible de joindre l\'API. Vérifiez VITE_API_URL sur Vercel (https://api.taomaninvestment.com/v1) et CORS_ORIGINS sur le backend.',
+          'Impossible de joindre l\'API. Vérifiez VITE_API_URL sur Vercel (https://backend-tao.onrender.com/v1) et CORS_ORIGINS sur le backend.',
         )
       } else if (err.response?.data?.requires2fa) {
         setTempToken(err.response.data.tempToken)
